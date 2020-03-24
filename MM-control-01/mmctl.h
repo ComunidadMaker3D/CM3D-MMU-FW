@@ -13,7 +13,7 @@ void select_extruder(int new_extruder);
 bool feed_filament(bool timeout = false);
 void load_filament_withSensor(bool disengageIdler = true);
 void load_filament_inPrinter();
-void unload_filament_withSensor();
+void unload_filament_withSensor(bool disengageIdler = true);
 void eject_filament(uint8_t filament);
 void recover_after_eject();
 void mmctl_cut_filament(uint8_t filament);

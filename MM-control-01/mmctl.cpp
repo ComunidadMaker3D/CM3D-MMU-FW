@@ -164,7 +164,7 @@ void switch_extruder_withSensor(int new_extruder)
 
     if (isFilamentLoaded)
     {
-        unload_filament_withSensor();
+        unload_filament_withSensor(false);
     }
 
     motion_set_idler_selector(active_extruder);
@@ -504,7 +504,7 @@ void load_filament_withSensor(bool disengageIdler)
     isFilamentLoaded = true;  // filament loaded
 }
 
-void unload_filament_withSensor()
+void unload_filament_withSensor(bool disengageIdler=true)
 {
     // unloads filament from extruder - filament is above Bondtech gears
     tmc2130_init_axis(AX_PUL, tmc2130_mode);
@@ -644,7 +644,9 @@ void unload_filament_withSensor()
             delayMicroseconds(4000*PULLEY_SPEED_ADJ);
         }
     }
-    motion_disengage_idler();
+    if (disengageIdler) {
+      	motion_disengage_idler();
+    }
     tmc2130_disable_axis(AX_PUL, tmc2130_mode);
     isFilamentLoaded = false; // filament unloaded
 }
