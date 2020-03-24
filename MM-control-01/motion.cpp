@@ -10,6 +10,7 @@
 #include "config.h"
 #include "tmc2130.h"
 #include "shr16.h"
+#include "mmctl.h"
 
 static uint8_t s_idler = 0;
 static uint8_t s_selector = 0;
@@ -114,13 +115,13 @@ void motion_disengage_idler()
 //! @brief unload until FINDA senses end of the filament
 static void unload_to_finda()
 {
-    int delay = 2000; //microstep period in microseconds
-    const int _first_point = 1800;
+    int delay = 2000*PULLEY_SPEED_ADJ; //microstep period in microseconds
 
     uint8_t _endstop_hit = 0;
 
-    int _unloadSteps = BowdenLength::get() + 1100;
-    const int _second_point = _unloadSteps - 1300;
+    int _unloadSteps = BowdenLength::get()/PULLEY_SPEED_ADJ + 250;    //~4750
+    const int _first_point = (float)_unloadSteps*(float)0.2;
+    const int _second_point = (float)_unloadSteps*(float)0.85;
 
     set_pulley_dir_pull();
 
@@ -129,12 +130,12 @@ static void unload_to_finda()
         do_pulley_step();
         _unloadSteps--;
 
-        if (_unloadSteps < 1400 && delay < 6000) delay += 3;
-        if (_unloadSteps < _first_point && delay < 2500) delay += 2;
-        if (_unloadSteps < _second_point && _unloadSteps > 5000)
+        if (_unloadSteps < 1400/PULLEY_SPEED_ADJ && delay < 6000/PULLEY_SPEED_ADJ) delay += 3*PULLEY_SPEED_ADJ;
+        if (_unloadSteps < _first_point && delay < 2500/PULLEY_SPEED_ADJ) delay += 2*PULLEY_SPEED_ADJ;
+        if (_unloadSteps < _second_point && _unloadSteps > 5000/PULLEY_SPEED_ADJ)
         {
-            if (delay > 550) delay -= 1;
-            if (delay > 330 && (NORMAL_MODE == tmc2130_mode)) delay -= 1;
+            if (delay > 550/PULLEY_SPEED_ADJ) delay -= 1*PULLEY_SPEED_ADJ;
+            if (delay > 330/PULLEY_SPEED_ADJ && (NORMAL_MODE == tmc2130_mode)) delay -= 1*PULLEY_SPEED_ADJ;
         }
 
         delayMicroseconds(delay);
@@ -145,28 +146,28 @@ static void unload_to_finda()
 
 void motion_feed_to_bondtech()
 {
-    int stepPeriod = 4500; //microstep period in microseconds
-    const uint16_t steps = BowdenLength::get();
+    int stepPeriod = 5500*PULLEY_SPEED_ADJ; //inital microstep period in microseconds
+    uint16_t steps = BowdenLength::get()/PULLEY_SPEED_ADJ;
 
     const uint8_t tries = 2;
     for (uint8_t tr = 0; tr <= tries; ++tr)
     {
         set_pulley_dir_push();
-        unsigned long delay = 4500;
+        unsigned long delay = 5500*PULLEY_SPEED_ADJ;
 
         for (uint16_t i = 0; i < steps; i++)
         {
             delayMicroseconds(delay);
             unsigned long now = micros();
 
-            if (i < 4000)
+            if (i < 4000/PULLEY_SPEED_ADJ)
             {
-                if (stepPeriod > 2600) stepPeriod -= 4;
-                if (stepPeriod > 1300) stepPeriod -= 2;
-                if (stepPeriod > 650) stepPeriod -= 1;
-                if (stepPeriod > 350 && (NORMAL_MODE == tmc2130_mode) && s_has_door_sensor) stepPeriod -= 1;
+                if (stepPeriod > 2600/PULLEY_SPEED_ADJ) stepPeriod -= 4*PULLEY_SPEED_ADJ;
+                if (stepPeriod > 1300/PULLEY_SPEED_ADJ) stepPeriod -= 2*PULLEY_SPEED_ADJ;
+                if (stepPeriod > 650/PULLEY_SPEED_ADJ) stepPeriod -= 1*PULLEY_SPEED_ADJ;
+                if (stepPeriod > 350/PULLEY_SPEED_ADJ && (NORMAL_MODE == tmc2130_mode) && s_has_door_sensor) stepPeriod -= 1*PULLEY_SPEED_ADJ;
             }
-            if (i > (steps - 800) && stepPeriod < 2600) stepPeriod += 10;
+            if (i > (steps - 800/PULLEY_SPEED_ADJ) && stepPeriod < 2600/PULLEY_SPEED_ADJ) stepPeriod += 10*PULLEY_SPEED_ADJ;
             if ('A' == getc(uart_com))
             {
                 s_has_door_sensor = true;

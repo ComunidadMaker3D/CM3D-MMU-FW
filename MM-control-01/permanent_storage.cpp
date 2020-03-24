@@ -83,6 +83,7 @@ static bool validBowdenLen (const uint16_t BowdenLength)
 //! @return stored bowden length
 uint16_t BowdenLength::get()
 {
+	return eepromBowdenLenDefault;   // to be fixed for extra extruders later
 	uint8_t filament = active_extruder;
 	if (validFilament(filament))
 	{

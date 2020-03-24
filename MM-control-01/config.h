@@ -123,7 +123,10 @@
 #define STA_ERR_TMC2_PIN_ENA  -26 //TMC2130 axis2 pin wirring error - ena signal
 
 //number of extruders
-#define EXTRUDERS 5
+#define EXTRUDERS              12
+
+//pulley size
+#define PULLEY_SPEED_ADJ       1.875
 
 //diagnostic functions
 //#define _DIAG

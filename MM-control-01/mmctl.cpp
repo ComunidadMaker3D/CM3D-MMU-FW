@@ -82,7 +82,7 @@ bool feed_filament(bool timeout)
             {
                 break;
             }
-            delayMicroseconds(4000);
+            delayMicroseconds(4000*PULLEY_SPEED_ADJ);
         }
 	}
 
@@ -93,7 +93,7 @@ bool feed_filament(bool timeout)
 		for (int i = 600 + finda_limit; i > 0; i--)
 		{
 			do_pulley_step();
-			delayMicroseconds(3000);
+			delayMicroseconds(4000*PULLEY_SPEED_ADJ);
 		}
 	}
 
@@ -306,7 +306,7 @@ static bool checkOk()
         do
         {
             do_pulley_step();
-            delayMicroseconds(3000);
+            delayMicroseconds(3000*PULLEY_SPEED_ADJ);
             if (digitalRead(A1) == 0) _endstop_hit++;
             _steps--;
         } while (_steps > 0 && _endstop_hit < 50);
@@ -322,7 +322,7 @@ static bool checkOk()
         do
         {
             do_pulley_step();
-            delayMicroseconds(3000);
+            delayMicroseconds(3000*PULLEY_SPEED_ADJ);
             if (digitalRead(A1) == 1) _endstop_hit++;
             _steps--;
         } while (_steps > 0 && _endstop_hit < 50);
@@ -340,7 +340,7 @@ static bool checkOk()
             for (int i = 600; i > 0; i--)   // 570
             {
                 do_pulley_step();
-                delayMicroseconds(3000);
+                delayMicroseconds(3000*PULLEY_SPEED_ADJ);
             }
             _ret = true;
         }
@@ -392,7 +392,7 @@ void load_filament_withSensor(bool disengageIdler)
     {
         do_pulley_step();
         _loadSteps++;
-        delayMicroseconds(5500);
+        delayMicroseconds(4000*PULLEY_SPEED_ADJ);
     } while (digitalRead(A1) == 0 && _loadSteps < 1500);
 
 
@@ -408,7 +408,7 @@ void load_filament_withSensor(bool disengageIdler)
                 for (int i = 200; i >= 0; i--)
                 {
                     do_pulley_step();
-                    delayMicroseconds(1500);
+                    delayMicroseconds(1500*PULLEY_SPEED_ADJ);
                 }
 
                 set_pulley_dir_push();
@@ -417,7 +417,7 @@ void load_filament_withSensor(bool disengageIdler)
                 {
                     do_pulley_step();
                     _loadSteps++;
-                    delayMicroseconds(4000);
+                    delayMicroseconds(4000*PULLEY_SPEED_ADJ);
                     if (digitalRead(A1) == 1) _endstop_hit++;
                 } while (_endstop_hit<100 && _loadSteps < 500);
             }
@@ -454,7 +454,7 @@ void load_filament_withSensor(bool disengageIdler)
                     for (int i = 0; i < 200; i++)
                     {
                         do_pulley_step();
-                        delayMicroseconds(5500);
+                        delayMicroseconds(5500*PULLEY_SPEED_ADJ);
                     }
                     motion_disengage_idler();
                     break;
@@ -488,7 +488,7 @@ void load_filament_withSensor(bool disengageIdler)
         {
             do_pulley_step();
             _loadSteps++;
-            delayMicroseconds(5500);
+            delayMicroseconds(5500*PULLEY_SPEED_ADJ);
         } while (digitalRead(A1) == 0 && _loadSteps < 1500);
         // ?
     }
@@ -527,10 +527,10 @@ void unload_filament_withSensor()
 
 
     // move a little bit so it is not a grinded hole in filament
-    for (int i = 100; i > 0; i--)
+    for (int i = 33; i > 0; i--)
     {
         do_pulley_step();
-        delayMicroseconds(5000);
+        delayMicroseconds(5000*PULLEY_SPEED_ADJ);
     }
 
 
@@ -546,7 +546,7 @@ void unload_filament_withSensor()
                 for (int i = 150; i > 0; i--)
                 {
                     do_pulley_step();
-                    delayMicroseconds(4000);
+                    delayMicroseconds(4000*PULLEY_SPEED_ADJ);
                 }
 
                 set_pulley_dir_pull();
@@ -556,9 +556,9 @@ void unload_filament_withSensor()
                 {
                     do_pulley_step();
                     _steps--;
-                    delayMicroseconds(3000);
+                    delayMicroseconds(3000*PULLEY_SPEED_ADJ);
                     if (digitalRead(A1) == 0) _endstop_hit++;
-                } while (_endstop_hit < 100 && _steps > 0);
+                } while (_endstop_hit < 33 && _steps > 0);
             }
             delay(100);
         }
@@ -602,7 +602,7 @@ void unload_filament_withSensor()
                 for (int i = 0; i < 200; i++)
                 {
                     do_pulley_step();
-                    delayMicroseconds(5500);
+                    delayMicroseconds(5500*PULLEY_SPEED_ADJ);
                 }
                 motion_disengage_idler();
                 break;
@@ -641,7 +641,7 @@ void unload_filament_withSensor()
         for (int i = 450; i > 0; i--)   // 570
         {
             do_pulley_step();
-            delayMicroseconds(5000);
+            delayMicroseconds(4000*PULLEY_SPEED_ADJ);
         }
     }
     motion_disengage_idler();
@@ -668,7 +668,7 @@ void load_filament_inPrinter()
     motion_engage_idler();
     set_pulley_dir_push();
 
-    const unsigned long fist_segment_delay = 2600;
+    const unsigned long fist_segment_delay = 2600*PULLEY_SPEED_ADJ;
 
     tmc2130_init_axis(AX_PUL, tmc2130_mode);
 

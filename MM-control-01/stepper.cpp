@@ -12,15 +12,15 @@
 #include "pins.h"
 #include "tmc2130.h"
 
-int8_t filament_type[EXTRUDERS] = {-1, -1, -1, -1, -1};
+int8_t filament_type[EXTRUDERS] = {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1};
 static bool isIdlerParked = false;
 
-static const int selector_steps_after_homing = -3700;
-static const int idler_steps_after_homing = -130;
+static const int selector_steps_after_homing = -4250;
+static const int idler_steps_after_homing = -33;  // need <45 for 12x25.2
 
-static const int selector_steps = 2790/4;
-static const int idler_steps = 1420 / 4;    // 2 msteps = 180 / 4
-static const int idler_parking_steps = (idler_steps / 2) + 40;  // 40
+static const int selector_steps = 303;        // 50 steps/mm
+static const int idler_steps = 224;           // 25.2° / .1125
+static const int idler_parking_steps = 280;   // idler*1.5
 
 
 static int set_idler_direction(int _steps);
@@ -81,8 +81,8 @@ bool home_idler()
 
 	for (int c = 1; c > 0; c--)  // not really functional, let's do it rather more times to be sure
 	{
-		delay(50);
-		for (int i = 0; i < 2000; i++)
+		delay(100);
+		for (int i = 0; i < 3000; i++)
 		{
 			move(1, 0,0);
 			delayMicroseconds(100);

@@ -290,7 +290,7 @@ void setup()
     tmc2130_init(HOMING_MODE);
     tmc2130_read_gstat(); //consume reset after power up
     uint8_t filament;
-    if(FilamentLoaded::get(filament))
+    if(FilamentLoaded::get(filament)  &&  (digitalRead(A1) == 1))
     {
         motion_set_idler(filament);
     }
@@ -337,7 +337,7 @@ void manual_extruder_selector()
 		switch (buttonPressed())
 		{
 		case Btn::right:
-			if (active_extruder < 5)
+			if (active_extruder < EXTRUDERS)
 			{
 				select_extruder(active_extruder + 1);
 			}
@@ -352,7 +352,7 @@ void manual_extruder_selector()
 		delay(500);
 	}
 
-	if (active_extruder == 5)
+	if (active_extruder == EXTRUDERS)
 	{
 		shr16_set_led(2 << 2 * 0);
 		delay(50);
@@ -386,7 +386,7 @@ void loop()
         break;
     case S::Idle:
         manual_extruder_selector();
-        if(Btn::middle == buttonPressed() && active_extruder < 5)
+        if(Btn::middle == buttonPressed() && active_extruder < EXTRUDERS)
         {
             shr16_set_led(2 << 2 * (4 - active_extruder));
             delay(500);

@@ -33,7 +33,7 @@ bool settings_select_filament()
         if (Btn::middle == buttonPressed())
         {
             motion_set_idler_selector(active_extruder);
-            if (active_extruder < 5) settings_bowden_length();
+            if (active_extruder < EXTRUDERS) settings_bowden_length();
             else
             {
                 select_extruder(0);
