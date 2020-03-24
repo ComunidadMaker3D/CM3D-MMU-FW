@@ -254,32 +254,37 @@ void unrecoverable_error()
 void setup()
 {
     permanentStorageInit();
-	shr16_init(); // shift register
-	led_blink(0);
+    shr16_init(); // shift register
+    led_blink(0);
+    
+    uart0_init(); //uart0
+    uart1_init(); //uart1
+    led_blink(1);
+    
+    #if (UART_STD == 0)
+    stdin = uart0io; // stdin = uart0
+    stdout = uart0io; // stdout = uart0
+    #elif (UART_STD == 1)
+    stdin = uart1io; // stdin = uart1
+    stdout = uart1io; // stdout = uart1
+    #endif //(UART_STD == 1)
+    
+    fprintf_P(uart_com, PSTR("start\n")); //startup message
+    
+    spi_init();
+    led_blink(2);
+    led_blink(3);
+    
+    adc_init(); // ADC
+    led_blink(4);
+    
+    shr16_set_ena(7);
+    shr16_set_led(0x000);
 
-	uart0_init(); //uart0
-	uart1_init(); //uart1
-	led_blink(1);
-
-#if (UART_STD == 0)
-	stdin = uart0io; // stdin = uart0
-	stdout = uart0io; // stdout = uart0
-#elif (UART_STD == 1)
-	stdin = uart1io; // stdin = uart1
-	stdout = uart1io; // stdout = uart1
-#endif //(UART_STD == 1)
-
-	fprintf_P(uart_com, PSTR("start\n")); //startup message
-
-	spi_init();
-	led_blink(2);
-	led_blink(3);
-
-	adc_init(); // ADC
-	led_blink(4);
-
-	shr16_set_ena(7);
-	shr16_set_led(0x000);
+    // initialize filaments (move here due to varying size array)
+    for (int8_t i=0; i<EXTRUDERS; i++) {
+      filament_type[i] = -1;
+    }    
 
     // check if to goto the settings menu
     if (buttonPressed() == Btn::middle)
@@ -295,8 +300,7 @@ void setup()
         motion_set_idler(filament);
     }
 
-	if (digitalRead(A1) == 1) isFilamentLoaded = true;
-
+    if (digitalRead(A1) == 1) isFilamentLoaded = true;
 }
 
 
@@ -585,4 +589,3 @@ void process_commands(FILE* inout)
 	{ //nothing received
 	}
 }
-
