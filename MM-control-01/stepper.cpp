@@ -11,6 +11,7 @@
 #include "permanent_storage.h"
 #include "pins.h"
 #include "tmc2130.h"
+#include "display.h"
 
 int8_t filament_type[EXTRUDERS];
 
@@ -73,6 +74,9 @@ void do_pulley_step()
 //! @retval false Failed
 bool home_idler()
 {
+#ifdef SSD_DISPLAY
+  display_message(MSG_HOMING);
+#endif
 	int _c = 0;
 	int _l = 0;
 
@@ -111,6 +115,10 @@ bool home_idler()
 
 bool home_selector()
 {
+#ifdef SSD_DISPLAY
+    display_message(MSG_HOMING);
+#endif
+    
     // if FINDA is sensing filament do not home
     check_filament_not_present();
 

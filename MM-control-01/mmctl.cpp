@@ -15,6 +15,7 @@
 #include "motion.h"
 #include "permanent_storage.h"
 #include "config.h"
+#include "display.h"
 
 //! Keeps track of selected filament. It is used for LED signalization and it is backed up to permanent storage
 //! so MMU can unload filament after power loss.
@@ -50,6 +51,9 @@ bool feed_filament(bool timeout)
 		tmc2130_init_axis_current_stealth(AX_PUL, 1, 15); //probably needs tuning of currents
 	}
 
+#ifdef SSD_DISPLAY
+	display_message(MSG_PRIMING);
+#endif
 	{
 	    uint_least8_t blinker = 0;
 	    uint_least8_t button_blanking = 0;
@@ -88,6 +92,9 @@ bool feed_filament(bool timeout)
 
 	if (loaded)
 	{
+#ifdef SSD_DISPLAY
+		display_message(MSG_RETRACTING);
+#endif
 		// unload to PTFE tube
 		set_pulley_dir_pull();
 		for (int i = 600 + finda_limit; i > 0; i--)
@@ -100,7 +107,10 @@ bool feed_filament(bool timeout)
 	tmc2130_disable_axis(AX_PUL, tmc2130_mode);
 	motion_disengage_idler();
 	shr16_set_led(1 << 2 * (4 - active_extruder));
-
+	
+#ifdef SSD_DISPLAY
+	display_message(MSG_IDLE);
+#endif
 	return loaded;
 }
 
@@ -159,6 +169,9 @@ void resolve_failed_loading(){
 void switch_extruder_withSensor(int new_extruder)
 {
 	shr16_set_led(2 << 2 * (4 - active_extruder));
+#ifdef SSD_DISPLAY
+	display_extruder_change(new_extruder);
+#endif
 
 	active_extruder = new_extruder;
 
@@ -178,6 +191,11 @@ void switch_extruder_withSensor(int new_extruder)
 
 	shr16_set_led(0x000);
 	shr16_set_led(1 << 2 * (4 - active_extruder));
+	
+#ifdef SSD_DISPLAY
+	display_extruder_change(-1);
+	display_count_incr(COUNTER::SUCCESS);
+#endif
 }
 
 //! @brief Select filament
@@ -388,6 +406,9 @@ void load_filament_withSensor(bool disengageIdler)
 
     // load filament until FINDA senses end of the filament, means correctly loaded into the selector
     // we can expect something like 570 steps to get in sensor
+#ifdef SSD_DISPLAY
+    display_message(MSG_PRIMING);
+#endif
     do
     {
         do_pulley_step();
@@ -399,8 +420,14 @@ void load_filament_withSensor(bool disengageIdler)
     // filament did not arrived at FINDA, let's try to correct that
     if (digitalRead(A1) == 0)
     {
+#ifdef SSD_DISPLAY
+		display_count_incr(COUNTER::LOAD_RETRY);
+#endif
         for (int i = 6; i > 0; i--)
         {
+#ifdef SSD_DISPLAY
+            display_error(MSG_PRIMING, 7-i);
+#endif
             if (digitalRead(A1) == 0)
             {
                 // attempt to correct
@@ -429,9 +456,11 @@ void load_filament_withSensor(bool disengageIdler)
     {
         bool _continue = false;
         bool _isOk = false;
-
-
-
+#ifdef SSD_DISPLAY
+        display_count_incr(COUNTER::LOAD_FAIL);
+        display_error(MSG_LOADERROR);
+#endif
+		
         motion_disengage_idler();
         do
         {
@@ -502,6 +531,9 @@ void load_filament_withSensor(bool disengageIdler)
     tmc2130_disable_axis(AX_PUL, tmc2130_mode);
     if (disengageIdler) motion_disengage_idler();
     isFilamentLoaded = true;  // filament loaded
+#ifdef SSD_DISPLAY
+    display_message(MSG_IDLE);
+#endif
 }
 
 void unload_filament_withSensor(bool disengageIdler=true)
@@ -538,8 +570,14 @@ void unload_filament_withSensor(bool disengageIdler=true)
     // FINDA is still sensing filament, let's try to unload it once again
     if (digitalRead(A1) == 1)
     {
+#ifdef SSD_DISPLAY
+        display_count_incr(COUNTER::UNLOAD_RETRY);
+#endif
         for (int i = 6; i > 0; i--)
         {
+#ifdef SSD_DISPLAY
+			display_message(MSG_UNLOADING, 7-i);
+#endif
             if (digitalRead(A1) == 1)
             {
                 set_pulley_dir_push();
@@ -572,7 +610,11 @@ void unload_filament_withSensor(bool disengageIdler=true)
     {
         bool _continue = false;
         bool _isOk = false;
-
+#ifdef SSD_DISPLAY
+        display_count_incr(COUNTER::UNLOAD_FAIL);
+        display_error(MSG_UNLOADERROR);
+#endif
+        
         motion_disengage_idler();
         do
         {
@@ -637,6 +679,9 @@ void unload_filament_withSensor(bool disengageIdler=true)
     {
         // correct unloading
         // unload to PTFE tube
+#ifdef SSD_DISPLAY
+        display_message(MSG_RETRACTING);
+#endif
         set_pulley_dir_pull();
         for (int i = 450; i > 0; i--)   // 570
         {
@@ -649,6 +694,9 @@ void unload_filament_withSensor(bool disengageIdler=true)
     }
     tmc2130_disable_axis(AX_PUL, tmc2130_mode);
     isFilamentLoaded = false; // filament unloaded
+#ifdef SSD_DISPLAY
+    display_message(MSG_IDLE);
+#endif
 }
 
 //! @brief Do 38.20 mm pulley push
@@ -666,7 +714,11 @@ void unload_filament_withSensor(bool disengageIdler=true)
 //! @n s1 =   770    / SPR * c = 38.10 mm    distance first segment
 void load_filament_inPrinter()
 {
-
+#ifdef SSD_DISPLAY
+    display_error(MSG_CONTINUING);
+    display_count_incr(COUNTER::LOAD_RETRY);
+#endif
+    
     motion_engage_idler();
     set_pulley_dir_push();
 

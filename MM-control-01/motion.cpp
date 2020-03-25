@@ -11,6 +11,7 @@
 #include "tmc2130.h"
 #include "shr16.h"
 #include "mmctl.h"
+#include "display.h"
 
 static uint8_t s_idler = 0;
 static uint8_t s_selector = 0;
@@ -63,6 +64,11 @@ void motion_set_idler_selector(uint8_t idler, uint8_t selector)
             s_idler = 0;
             s_selector_homed = true;
     }
+#ifdef SSD_DISPLAY
+    display_message(MSG_SELECTING);
+    display_extruder(-1);
+#endif
+    
     const uint8_t tries = 2;
     for (uint8_t i = 0; i <= tries; ++i)
     {
@@ -81,6 +87,10 @@ void motion_set_idler_selector(uint8_t idler, uint8_t selector)
             rehome();
         }
     }
+#ifdef SSD_DISPLAY
+    display_message(MSG_IDLE);
+    display_extruder();
+#endif
 }
 
 static void check_idler_drive_error()
@@ -115,7 +125,10 @@ void motion_disengage_idler()
 //! @brief unload until FINDA senses end of the filament
 static void unload_to_finda()
 {
-    int delay = 2000*PULLEY_SPEED_ADJ; //microstep period in microseconds
+#ifdef SSD_DISPLAY
+    display_message(MSG_UNLOADING);
+#endif
+    int delay = 4500*PULLEY_SPEED_ADJ; //microstep period in microseconds
 
     uint8_t _endstop_hit = 0;
 
@@ -146,12 +159,22 @@ static void unload_to_finda()
 
 void motion_feed_to_bondtech()
 {
+#ifdef SSD_DISPLAY
+    display_message(MSG_LOADING);
+#endif
     int stepPeriod = 5500*PULLEY_SPEED_ADJ; //inital microstep period in microseconds
     uint16_t steps = BowdenLength::get()/PULLEY_SPEED_ADJ;
 
     const uint8_t tries = 2;
     for (uint8_t tr = 0; tr <= tries; ++tr)
     {
+        if (tr > 0) {
+#ifdef SSD_DISPLAY
+          display_count_incr(COUNTER::LOAD_RETRY);
+          display_error(MSG_LOADING, tr);
+#endif
+        }
+        
         set_pulley_dir_push();
         unsigned long delay = 5500*PULLEY_SPEED_ADJ;
 
@@ -188,6 +211,11 @@ void motion_feed_to_bondtech()
             unload_to_finda();
         }
     }
+    
+#ifdef SSD_DISPLAY
+    display_error(MSG_LOADING);
+    display_count_incr(COUNTER::LOAD_FAIL);
+#endif
 }
 
 
@@ -224,7 +252,16 @@ void motion_door_sensor_detected()
 void motion_set_idler(uint8_t idler)
 {
     home_idler();
+#ifdef SSD_DISPLAY
+    display_message(MSG_SELECTING);
+#endif
     int idler_steps = get_idler_steps(0, idler);
     move_proportional(idler_steps, 0);
     s_idler = idler;
+    
+    active_extruder = idler;
+#ifdef SSD_DISPLAY
+    display_message(MSG_IDLE);
+    display_extruder();
+#endif
 }

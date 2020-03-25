@@ -20,6 +20,7 @@
 #include "version.h"
 #include "config.h"
 #include "motion.h"
+#include "display.h"
 
 
 uint8_t tmc2130_mode = NORMAL_MODE;
@@ -199,6 +200,9 @@ static void signal_drive_error()
 
 void drive_error()
 {
+#ifdef SSD_DISPLAY
+    display_error(MSG_ERROR);
+#endif
     for(uint8_t i = 0; i < 3; ++i)
     {
         signal_drive_error();
@@ -253,6 +257,9 @@ void unrecoverable_error()
 //! @n b - blinking
 void setup()
 {
+#ifdef SSD_DISPLAY
+	display_init();
+#endif
     permanentStorageInit();
     shr16_init(); // shift register
     led_blink(0);
@@ -261,13 +268,13 @@ void setup()
     uart1_init(); //uart1
     led_blink(1);
     
-    #if (UART_STD == 0)
+#if (UART_STD == 0)
     stdin = uart0io; // stdin = uart0
     stdout = uart0io; // stdout = uart0
-    #elif (UART_STD == 1)
+#elif (UART_STD == 1)
     stdin = uart1io; // stdin = uart1
     stdout = uart1io; // stdout = uart1
-    #endif //(UART_STD == 1)
+#endif //(UART_STD == 1)
     
     fprintf_P(uart_com, PSTR("start\n")); //startup message
     
@@ -301,6 +308,9 @@ void setup()
     }
 
     if (digitalRead(A1) == 1) isFilamentLoaded = true;
+#ifdef SSD_DISPLAY
+	display_message(MSG_IDLE);
+#endif
 }
 
 
@@ -377,6 +387,7 @@ void manual_extruder_selector()
 void loop()
 {
     process_commands(uart_com);
+    process_commands(stdin);    // for testing and debugging
 
     switch (state)
     {
@@ -447,6 +458,7 @@ void process_commands(FILE* inout)
 	{
 		if ((c = getc(inout)) >= 0)
 		{
+			Serial.write(c); // debug printer input back to console
 			if (c == '\r') c = 0;
 			if (c == '\n') c = 0;
 			line[count++] = c;
@@ -457,6 +469,7 @@ void process_commands(FILE* inout)
 		count = 0;
 		//overflow
 	}
+	char cmd;
 	int value = 0;
 	int value0 = 0;
 
@@ -464,6 +477,12 @@ void process_commands(FILE* inout)
 	{
 		//line received
 		//printf_P(PSTR("line received: '%s' %d\n"), line, count);
+#ifdef SSD_DISPLAY
+		if (sscanf_P(line, PSTR("%c%d"), &cmd, &value) > 0) {
+			display_command(cmd, value);
+		}
+#endif
+		
 		count = 0;
         //! T<nr.> change to filament <nr.>
 		if (sscanf_P(line, PSTR("T%d"), &value) > 0)
@@ -573,6 +592,9 @@ void process_commands(FILE* inout)
         {
             if (value == 0) //! W0 Wait for user click
             {
+#ifdef SSD_DISPLAY
+                display_error(MSG_WAITING);
+#endif
                 state = S::Wait;
             }
         }
