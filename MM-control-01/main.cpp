@@ -602,7 +602,9 @@ void process_commands(FILE* inout)
         {
             if ((value >= 0) && (value < EXTRUDERS)) //! K<nr.> cut filament
             {
+#ifdef ENABLE_CUTTER
                 mmctl_cut_filament(value);
+#endif
                 fprintf_P(inout, PSTR("ok\n"));
             }
         }

@@ -123,10 +123,14 @@
 #define STA_ERR_TMC2_PIN_ENA  -26 //TMC2130 axis2 pin wirring error - ena signal
 
 //number of extruders
-#define EXTRUDERS              12
+#define EXTRUDERS               12
+#undef ENABLE_CUTTER            // defined for original PrusaMMU2
 
-//pulley size
-#define PULLEY_SPEED_ADJ       1.875
+//pulley parameters
+#define REVERSE_PULLEY          // undefined for original PrusaMMU2
+#define REVERSE_IDLER           // undefined for original PrusaMMU2
+#undef REVERSE_SELECTOR         // undefined for original PrusaMMU2
+#define PULLEY_SPEED_ADJ        1.875
 
 //diagnostic functions
 //#define _DIAG

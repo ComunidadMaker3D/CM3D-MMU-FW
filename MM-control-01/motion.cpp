@@ -39,7 +39,7 @@ static void rehome_idler()
     tmc2130_init(tmc2130_mode);
     home_idler();
     int idler_steps = get_idler_steps(0, s_idler);
-    move_proportional(idler_steps, 0);
+    move(idler_steps, 0, 0);
     if (s_idler_engaged) park_idler(true);
 }
 
@@ -75,7 +75,7 @@ void motion_set_idler_selector(uint8_t idler, uint8_t selector)
         int idler_steps = get_idler_steps(s_idler, idler);
         int selector_steps = get_selector_steps(s_selector, selector);
 
-        move_proportional(idler_steps, selector_steps);
+        move(idler_steps, selector_steps, 0);
         s_idler = idler;
         s_selector = selector;
 
@@ -256,7 +256,7 @@ void motion_set_idler(uint8_t idler)
     display_message(MSG_SELECTING);
 #endif
     int idler_steps = get_idler_steps(0, idler);
-    move_proportional(idler_steps, 0);
+    move(idler_steps, 0, 0);
     s_idler = idler;
     
     active_extruder = idler;

@@ -215,6 +215,9 @@ void select_extruder(int new_extruder)
 	shr16_set_led(0x000);
 	shr16_set_led(1 << 2 * (4 - active_extruder));
 }
+
+
+#ifdef ENABLE_CUTTER
 //! @brief cut filament
 //! @param filament filament 0 to 4
 void mmctl_cut_filament(uint8_t filament)
@@ -256,6 +259,7 @@ void mmctl_cut_filament(uint8_t filament)
     motion_set_idler_selector(filament, filament);
     if(!feed_filament(true)){resolve_failed_loading();}
 }
+#endif
 
 //! @brief eject filament
 //! Move selector sideways and push filament forward little bit, so user can catch it,
