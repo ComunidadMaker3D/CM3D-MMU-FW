@@ -138,7 +138,7 @@ static void unload_to_finda()
 
     set_pulley_dir_pull();
 
-    while (_endstop_hit < 100u && _unloadSteps > 0)
+    while (_endstop_hit < finda_limit && _unloadSteps > 0)
     {
         do_pulley_step();
         _unloadSteps--;
@@ -162,7 +162,7 @@ void motion_feed_to_bondtech()
 #ifdef SSD_DISPLAY
     display_message(MSG_LOADING);
 #endif
-    int stepPeriod = 5500*PULLEY_SPEED_ADJ; //inital microstep period in microseconds
+    int stepPeriod = get_pulley_delay(PULLEY_RATE_PRIME); //inital microstep period in microseconds
     uint16_t steps = BowdenLength::get()/PULLEY_SPEED_ADJ;
 
     const uint8_t tries = 2;
@@ -176,7 +176,7 @@ void motion_feed_to_bondtech()
         }
         
         set_pulley_dir_push();
-        unsigned long delay = 5500*PULLEY_SPEED_ADJ;
+        unsigned long delay = get_pulley_delay(PULLEY_RATE_PRIME);
 
         for (uint16_t i = 0; i < steps; i++)
         {

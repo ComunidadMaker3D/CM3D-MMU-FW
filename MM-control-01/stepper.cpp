@@ -24,13 +24,28 @@ static const int selector_steps = 303;        // 50 steps/mm
 static const int idler_steps = 224;           // 25.2° / .1125
 static const int idler_parking_steps = 280;   // idler*1.5
 
-
 static int set_idler_direction(int _steps);
 static int set_selector_direction(int _steps);
 static int set_pulley_direction(int _steps);
 static void set_idler_dir_down();
 static void set_idler_dir_up();
 static void move(int _idler, int _selector, int _pulley);
+
+
+//! @brief Compute delay based on mm/s
+//! @param mms mm/s feedrate for pulley
+//! @return delay in ms
+int get_pulley_delay(float mms)
+{
+  return floor((float)1000000 / (mms*(float)PULLEY_STEPS_PER_MM));
+}
+
+//! @brief Compute pulley steps based on distance
+//! @param mm total length of movement of filament
+//! @return steps
+int get_pulley_steps(float mm) {
+  return (float)PULLEY_STEPS_PER_MM * mm;
+}
 
 //! @brief Compute steps for selector needed to change filament
 //! @param current_filament Currently selected filament
@@ -294,8 +309,8 @@ void set_pulley_dir_push()
 void set_pulley_dir_pull()
 {
 #ifdef REVERSE_PULLEY
-#else  
   shr16_set_dir(shr16_get_dir() & ~1);
+#else  
 	shr16_set_dir(shr16_get_dir() | 1);
 #endif
 }

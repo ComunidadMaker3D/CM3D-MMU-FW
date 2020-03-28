@@ -122,15 +122,29 @@
 #define STA_ERR_TMC2_PIN_DIR  -25 //TMC2130 axis2 pin wirring error - dir signal
 #define STA_ERR_TMC2_PIN_ENA  -26 //TMC2130 axis2 pin wirring error - ena signal
 
+
 //number of extruders
 #define EXTRUDERS               12
-#undef ENABLE_CUTTER            // defined for original PrusaMMU2
+#undef  ENABLE_CUTTER           // defined for original PrusaMMU2
 
-//pulley parameters
+//axis parameters
 #define REVERSE_PULLEY          // undefined for original PrusaMMU2
 #define REVERSE_IDLER           // undefined for original PrusaMMU2
-#undef REVERSE_SELECTOR         // undefined for original PrusaMMU2
+#undef  REVERSE_SELECTOR        // undefined for original PrusaMMU2
+
+//pulley speeds (mm/s)
 #define PULLEY_SPEED_ADJ        1.875
+#define PULLEY_DIAMETER         11.9f    // original PrusaMMU2 = 6.2
+#define PULLEY_STEPS_PER_MM     400 / (PI * PULLEY_DIAMETER)  // 400 = motor steps(200) * pulley resolution(2)
+
+#define PULLEY_RATE_EXTRUDER    19.02f   // mm/s, direct from Firmware::mmu.h
+#define PULLEY_RATE_PRIME       12
+#define PULLEY_RATE_LOAD        120
+#define PULLEY_RATE_UNLOAD      120        
+
+//filament lengths
+#define FILAMENT_RETRACT_MM     22.5f   // original PrusaMMU2 = ~29.2?
+#define FILAMENT_BOWDEN_MM      38.4f   // original PrusaMMU2 = ~427
 
 //diagnostic functions
 //#define _DIAG

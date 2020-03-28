@@ -7,7 +7,9 @@
 
 extern int active_extruder;
 extern bool isFilamentLoaded;
+extern const uint8_t finda_limit;
 
+void retract_filament(int extra_steps = 0);
 void switch_extruder_withSensor(int new_extruder);
 void select_extruder(int new_extruder);
 bool feed_filament(bool timeout = false);

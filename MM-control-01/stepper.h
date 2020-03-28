@@ -12,6 +12,8 @@ extern int8_t filament_type[EXTRUDERS];
 void home();
 bool home_idler();
 
+int get_pulley_delay(float mms);
+int get_pulley_steps(float mm);
 int get_idler_steps(int current_filament, int next_filament);
 int get_selector_steps(int current_filament, int next_filament);
 

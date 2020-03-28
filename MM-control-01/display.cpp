@@ -132,7 +132,6 @@
     } else {
       sprintf(text, "=");
     }
-    //Serial.println(text);
     
     oled.setFont(Verdana_digits_24);
     oled.setCursor(0, 3);
