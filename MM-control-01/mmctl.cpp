@@ -730,7 +730,7 @@ void load_filament_inPrinter()
     motion_engage_idler();
     set_pulley_dir_push();
 
-    const unsigned long fist_segment_delay = 2600*PULLEY_SPEED_ADJ;
+    const unsigned long fist_segment_delay = get_pulley_delay(PULLEY_RATE_EXTRUDER);
 
     tmc2130_init_axis(AX_PUL, tmc2130_mode);
 

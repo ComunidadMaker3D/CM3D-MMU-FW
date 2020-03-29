@@ -133,7 +133,6 @@
 #undef  REVERSE_SELECTOR        // undefined for original PrusaMMU2
 
 //pulley speeds (mm/s)
-#define PULLEY_SPEED_ADJ        1.875
 #define PULLEY_DIAMETER         11.9f    // original PrusaMMU2 = 6.2
 #define PULLEY_STEPS_PER_MM     400 / (PI * PULLEY_DIAMETER)  // 400 = motor steps(200) * pulley resolution(2)
 #define PULLEY_ACCELERATION_X   0.995f
