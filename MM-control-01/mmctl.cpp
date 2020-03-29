@@ -349,7 +349,7 @@ static bool checkOk()
         // looks ok, load filament to FINDA
         set_pulley_dir_push();
 
-        _steps = 3000;
+        _steps = get_pulley_steps(50);
         _endstop_hit = 0;
         do
         {
@@ -422,13 +422,22 @@ void retry_finda(boolean state) {
       }
 
       (state)?set_pulley_dir_pull():set_pulley_dir_push();
-      uint16_t _steps = get_pulley_steps( (state)?20:FILAMENT_BOWDEN_MM/2 );
+      uint16_t _steps = get_pulley_steps( (state)?FILAMENT_BOWDEN_MM/2:100 );
       do
       {
         do_pulley_step();
-        _steps++;
-        delayMicroseconds(PULLEY_DELAY_PRIME);
+        _steps--;
+        delayMicroseconds(PULLEY_DELAY_PRIME*1.5);
         if (!digitalRead(A1) == state) _endstop_hit++;
+        if (buttonPressed() == Btn::middle)
+        {
+          //allow manual intervention; exit to failure options
+          delay(ButtonHold);  //de-bounce
+          if (buttonPressed() == Btn::middle)
+          {
+            return;
+          }
+        }
       } while (_endstop_hit<finda_limit && _steps > 0);
     }
     delay(100);
@@ -525,7 +534,7 @@ void load_filament_withSensor(bool disengageIdler)
         do_pulley_step();
         _loadSteps++;
         delayMicroseconds(PULLEY_DELAY_PRIME);
-    } while (digitalRead(A1) == 0 && _loadSteps < 1500);
+    } while (digitalRead(A1) == 0 && _loadSteps < get_pulley_steps(50));
 
 
     // filament did not arrived at FINDA, let's try to correct that

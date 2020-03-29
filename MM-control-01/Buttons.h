@@ -11,6 +11,8 @@
 	#include "WProgram.h"
 #endif
 
+extern const uint16_t ButtonHold;
+
 enum class Btn : uint8_t
 {
 	none = 0,

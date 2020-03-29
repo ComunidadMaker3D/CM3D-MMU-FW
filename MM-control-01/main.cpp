@@ -346,7 +346,7 @@ void manual_extruder_selector()
 
 	if ((Btn::left|Btn::right) & buttonPressed())
 	{
-		delay(500);
+		delay(ButtonHold);
 
 		switch (buttonPressed())
 		{
@@ -363,7 +363,7 @@ void manual_extruder_selector()
 		default:
 			break;
 		}
-		delay(500);
+		delay(ButtonHold);
 	}
 
 	if (active_extruder == EXTRUDERS)
@@ -404,7 +404,7 @@ void loop()
         if(Btn::middle == buttonPressed() && active_extruder < EXTRUDERS)
         {
             shr16_set_led(2 << 2 * (4 - active_extruder));
-            delay(500);
+            delay(ButtonHold);
             if (Btn::middle == buttonPressed())
             {
                 motion_set_idler_selector(active_extruder);

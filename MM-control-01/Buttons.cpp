@@ -10,6 +10,7 @@
 #include "motion.h"
 
 const int ButtonPin = A2;
+const uint16_t ButtonHold = 200;
 
 void settings_bowden_length();
 
@@ -29,7 +30,7 @@ bool settings_select_filament()
     if(Btn::middle == buttonPressed())
     {
         shr16_set_led(2 << 2 * (4 - active_extruder));
-        delay(500);
+        delay(ButtonHold);
         if (Btn::middle == buttonPressed())
         {
             motion_set_idler_selector(active_extruder);
