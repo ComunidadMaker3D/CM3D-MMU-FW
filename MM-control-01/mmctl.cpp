@@ -405,7 +405,7 @@ void retry_finda(boolean state) {
   display_count_incr((state)?COUNTER::UNLOAD_RETRY:COUNTER::LOAD_RETRY);
 #endif
   
-  for (int i = 6; i > 0; i--)
+  for (int i = 0; i > 0; i--)
   {
 #ifdef SSD_DISPLAY
     display_error((state)?MSG_UNLOADING:MSG_PRIMING, 7-i);
@@ -445,15 +445,179 @@ void retry_finda(boolean state) {
 }
 
 
+int8_t modeIncr(int8_t mode, uint8_t count) {
+  return (mode+1) % count;
+}
+
+void enhanced_interactive_menu(boolean state) {
+  display_count_incr((state)?COUNTER::UNLOAD_FAIL:COUNTER::LOAD_FAIL);
+  display_error((state)?MSG_UNLOADERROR:MSG_LOADERROR);
+  
+  bool _continue = false;
+  bool _isOk = false;
+  int8_t mode = 3;
+  uint8_t modeCount = 4;
+  int8_t lastMode = mode;
+  Btn currentButton = Btn::none;
+  Btn lastButton = Btn::none;
+  bool buttonDebounce = true;
+  bool updateDisplay = false;
+  
+  motion_disengage_idler();
+  
+  do
+  {
+    if (lastMode != mode) {
+      if (mode == 0) {
+        motion_engage_idler();
+        buttonDebounce = false;
+      }
+      if (lastMode == 0) {
+        motion_disengage_idler();
+        buttonDebounce = true;
+      }
+      lastMode = mode;
+      updateDisplay = true;
+    }
+
+    if (buttonPressed() != lastButton  ||  !buttonDebounce) {
+      if (buttonPressed() != Btn::none) {
+        delay(ButtonHold/2);
+      } else {
+        currentButton = Btn::none;
+      }
+      if (buttonPressed() != Btn::none) {
+        currentButton = buttonPressed();
+        lastButton = currentButton;
+      }
+    }
+    
+    switch(mode) {
+      // "main" menu
+      case 3:
+        if (updateDisplay) { display_error(MSG_WAITING); }
+        switch (currentButton) {
+          case Btn::left:
+            rehome();
+            motion_set_idler_selector(active_extruder);
+            break;
+          case Btn::middle:
+            mode = modeIncr(mode, modeCount);
+            break;
+          case Btn::right:
+            // continue with unloading
+            display_error(MSG_RECOVERING);
+            lastMode = -1;
+            motion_engage_idler();
+            _isOk = checkOk();
+            motion_disengage_idler();
+            break;
+        }
+        break;
+
+      // move pulley
+      case 0:
+        if (updateDisplay) { display_error(MSG_AXIS_PULLEY); }
+        switch (currentButton) {
+          case Btn::left:
+            move(0, 0, get_pulley_steps(-1));    // move 1mm
+            break;
+          case Btn::middle:
+            mode = modeIncr(mode, modeCount);
+            break;
+          case Btn::right:
+            move(0, 0, get_pulley_steps(1));
+            break;
+        }
+        break;
+      
+      // move selector
+      case 1:
+        if (updateDisplay) { display_error(MSG_AXIS_SELECTOR); }
+        switch (currentButton) {
+          case Btn::left:
+            move(0, -25, 0);    // move ~.5mm
+            break;
+          case Btn::middle:
+            mode = modeIncr(mode, modeCount);
+            break;
+          case Btn::right:
+            move(0, 25, 0);
+            break;
+        }
+        break;
+
+      // move idler
+      case 2:
+        if (updateDisplay) { display_error(MSG_AXIS_IDLER); }
+        switch (currentButton) {
+          case Btn::left:
+            move(9, 0, 0);    // move ~1°
+            break;
+          case Btn::middle:
+            mode = modeIncr(mode, modeCount);
+            break;
+          case Btn::right:
+            move(-9, 0, 0);
+            break;
+        }
+        break;
+/*
+      switch (buttonPressed())
+      {
+        case Btn::left:
+          // just move filament little bit
+          motion_engage_idler();
+          (state)?set_pulley_dir_pull():set_pulley_dir_push();
+
+          for (int i = 0; i < 200; i++)
+          {
+              do_pulley_step();
+              delayMicroseconds(PULLEY_DELAY_PRIME);
+          }
+          motion_disengage_idler();
+          break;
+        case Btn::middle:
+          // check if everything is ok
+          motion_engage_idler();
+          _isOk = checkOk();
+          motion_disengage_idler();
+          break;
+        case Btn::right:
+          // continue with unloading
+          motion_engage_idler();
+          _isOk = checkOk();
+          motion_disengage_idler();
+
+          break;
+        default:
+          break;
+      }*/
+    }
+
+    if (_isOk) {
+      _continue = true;
+    }
+
+    currentButton = Btn::none;
+    updateDisplay = false;
+  } while (!_continue);
+
+  shr16_set_led(1 << 2 * (4 - active_extruder));
+  motion_engage_idler();
+}
+
+
 void interactive_load_failure(boolean state) {
+#ifdef SSD_DISPLAY
+  enhanced_interactive_menu(state);
+  return;
+#endif
+
   // filament action failed; wait on user interaction
   // state  0:load  1:unload
   bool _continue = false;
   bool _isOk = false;
-#ifdef SSD_DISPLAY
-  display_count_incr((state)?COUNTER::UNLOAD_FAIL:COUNTER::LOAD_FAIL);
-  display_error((state)?MSG_UNLOADERROR:MSG_LOADERROR);
-#endif
   
   motion_disengage_idler();
   do

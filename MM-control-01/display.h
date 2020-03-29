@@ -32,6 +32,9 @@ extern const char MSG_ERROR[];
 extern const char MSG_LOADERROR[];
 extern const char MSG_UNLOADERROR[];
 extern const char MSG_F[];
+extern const char MSG_AXIS_PULLEY[];
+extern const char MSG_AXIS_SELECTOR[];
+extern const char MSG_AXIS_IDLER[];
 
 enum class COUNTER : uint8_t {LOAD_RETRY, LOAD_FAIL, UNLOAD_RETRY, UNLOAD_FAIL, SUCCESS};
 

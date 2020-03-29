@@ -24,7 +24,10 @@
   const char MSG_LOADERROR[] = "Load Fail";
   const char MSG_UNLOADERROR[] = "Unload Fail";
   const char MSG_F[] = "F";
-  
+  const char MSG_AXIS_PULLEY[] = ">Pulley";
+  const char MSG_AXIS_SELECTOR[] = ">Selector";
+  const char MSG_AXIS_IDLER[] = ">Idler";  
+
   uint16_t current_display_cmd = 0;
   uint16_t current_display_counts[5] = {0,0,0,0,0};
   boolean current_display_error = false;
