@@ -1,4 +1,5 @@
 #include "display.h"
+#include "config.h"
 #include "mmctl.h"
 
 
@@ -127,7 +128,9 @@
     }
     
     char text[3];
-    if (v >= 0) {
+    if (v > EXTRUDERS) {
+      sprintf(text, ">>");
+    } else if (v >= 0) {
       sprintf(text, "%d", v);
     } else {
       sprintf(text, "=");

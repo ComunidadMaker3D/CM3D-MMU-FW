@@ -286,7 +286,8 @@ void mmctl_cut_filament(uint8_t filament)
 void eject_filament(uint8_t filament)
 {
     active_extruder = filament;
-    const uint8_t selector_position = (filament <= 2) ? 4 : 0;
+    uint8_t selector_position = min(filament + 3, EXTRUDERS);
+    uint16_t _delay = get_pulley_delay(PULLEY_RATE_EXTRUDER);
 
     if (isFilamentLoaded)  unload_filament_withSensor();
 
@@ -301,7 +302,7 @@ void eject_filament(uint8_t filament)
     {
         do_pulley_step();
         steps++;
-        delayMicroseconds(1500);
+        delayMicroseconds(_delay);
     }
 
     motion_disengage_idler();
@@ -311,6 +312,8 @@ void eject_filament(uint8_t filament)
 //! @brief restore state before eject filament
 void recover_after_eject()
 {
+    uint16_t _delay = get_pulley_delay(PULLEY_RATE_EXTRUDER);
+    
     tmc2130_init_axis(AX_PUL, tmc2130_mode);
     motion_engage_idler();
     set_pulley_dir_pull();
@@ -318,7 +321,7 @@ void recover_after_eject()
     {
         do_pulley_step();
         steps++;
-        delayMicroseconds(1500);
+        delayMicroseconds(_delay);
     }
     motion_disengage_idler();
 

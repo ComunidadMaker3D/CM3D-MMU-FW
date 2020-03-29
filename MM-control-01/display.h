@@ -1,7 +1,8 @@
+#include "config.h"
+
+
 #ifndef DISPLAY_H
 #define DISPLAY_H
-
-#define SSD_DISPLAY
 
 
 #ifdef SSD_DISPLAY

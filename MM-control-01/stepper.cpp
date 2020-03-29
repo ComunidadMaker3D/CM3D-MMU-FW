@@ -17,6 +17,7 @@ int8_t filament_type[EXTRUDERS];
 
 static bool isIdlerParked = false;
 
+static const int selector_steps_last = 450;
 static const int selector_steps_after_homing = -4250;
 static const int idler_steps_after_homing = -33;  // need <45 for 12x25.2
 
@@ -53,7 +54,13 @@ int get_pulley_steps(float mm) {
 //! @return selector steps
 int get_selector_steps(int current_filament, int next_filament)
 {
+  if (next_filament == EXTRUDERS) {
+    return (((current_filament - next_filament) * selector_steps) * -1) + selector_steps_last;
+  } else if (current_filament == EXTRUDERS) {
+    return (((current_filament - next_filament) * selector_steps) * -1) - selector_steps_last;
+  } else {
     return (((current_filament - next_filament) * selector_steps) * -1);
+  }
 }
 
 //! @brief Compute number of steps to reach full speed
@@ -107,16 +114,16 @@ bool home_idler()
 
 	tmc2130_init(HOMING_MODE);
 
-	move(-10, 0, 0); // move a bit in opposite direction
 
-	for (int c = 1; c > 0; c--)  // not really functional, let's do it rather more times to be sure
+	for (int c = 3; c > 0; c--)  // not really functional, let's do it rather more times to be sure
 	{
-		delay(100);
+    move(-10, 0, 0); // move a bit in opposite direction
+		delay(250);
 		for (int i = 0; i < 3000; i++)
 		{
-			move(1, 0,0);
-			delayMicroseconds(100);
-			tmc2130_read_sg(0);
+			move(1, 0, 0);
+			uint16_t sg = tmc2130_read_sg(AX_IDL);
+      if ((i > 16) && (sg < 16)) break;
 
 			_c++;
 			if (i == 1000) { _l++; }
@@ -131,7 +138,7 @@ bool home_idler()
 
 	delay(500);
 
-    isIdlerParked = false;
+  isIdlerParked = false;
 
 	park_idler(false);
 
@@ -196,7 +203,7 @@ void home()
 
 void move(int _idler, int _selector, int _pulley)
 {
-	int _acc = (max(_idler, _selector)>1) ? 120 : 0;
+	int _acc = (max(_idler, _selector)>1) ? 130 : 0;
   int delay = 1200;
 
 	// gets steps to be done and set direction

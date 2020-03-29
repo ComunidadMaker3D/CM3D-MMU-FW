@@ -61,7 +61,7 @@
 // SG_THR stallguard treshold (sensitivity), range -128..127, real 0-3
 #define TMC2130_SG_THR_0       5
 #define TMC2130_SG_THR_1       6
-#define TMC2130_SG_THR_2       7
+#define TMC2130_SG_THR_2       8
 // TCOOLTHRS coolstep treshold, usable range 400-600
 #define TMC2130_TCOOLTHRS_0    450
 #define TMC2130_TCOOLTHRS_1    450
@@ -146,8 +146,11 @@
 #define FILAMENT_RETRACT_MM     22.5f   // original PrusaMMU2 = ~29.2?
 #define FILAMENT_BOWDEN_MM      427.0f   // original PrusaMMU2 = ~427
 
+//external display
+#define SSD_DISPLAY             // undefined for original PrusaMMU2
+
 //diagnostic functions
 //#define _DIAG
-#define NO_HOME
+//#define NO_HOME
 
 #endif //CONFIG_H_
