@@ -128,18 +128,15 @@ static void unload_to_finda()
 #ifdef SSD_DISPLAY
     display_message(MSG_UNLOADING);
 #endif
-    uint16_t stepPeriodPrime = get_pulley_delay(PULLEY_RATE_PRIME); //inital microstep period in microseconds
-    uint16_t stepPeriodUnload = get_pulley_delay(PULLEY_RATE_UNLOAD);
-    uint16_t stepPeriodExtruder = get_pulley_delay(PULLEY_RATE_EXTRUDER);
     uint16_t steps = get_pulley_steps(FILAMENT_BOWDEN_MM);
-    uint16_t steps_acc = get_pulley_acceleration_steps(stepPeriodPrime, stepPeriodUnload);
-    uint16_t steps_dec = get_pulley_acceleration_steps(stepPeriodUnload, stepPeriodPrime);
+    uint16_t steps_acc = get_pulley_acceleration_steps(PULLEY_DELAY_PRIME, PULLEY_DELAY_UNLOAD);
+    uint16_t steps_dec = get_pulley_acceleration_steps(PULLEY_DELAY_UNLOAD, PULLEY_DELAY_PRIME);
     uint16_t steps_extra = get_pulley_steps(10);
     uint8_t _endstop_hit = 0;
     
     set_pulley_dir_pull();
-    uint16_t delay = stepPeriodPrime;
-    uint16_t stepPeriod = stepPeriodPrime;
+    uint16_t delay = PULLEY_DELAY_PRIME;
+    uint16_t stepPeriod = PULLEY_DELAY_PRIME;
     uint16_t _steps = steps + steps_extra;
 
     while (_endstop_hit < finda_limit && _steps > 0)
@@ -149,8 +146,8 @@ static void unload_to_finda()
         
         do_pulley_step();
 
-        if (_steps > steps-steps_acc  &&  stepPeriod > stepPeriodUnload)  { stepPeriod = (float)stepPeriod * PULLEY_ACCELERATION_X; }
-        if (_steps < steps_dec+steps_extra  &&  stepPeriod < stepPeriodPrime)  { stepPeriod = (float)stepPeriod / PULLEY_ACCELERATION_X; }
+        if (_steps > steps-steps_acc  &&  stepPeriod > PULLEY_DELAY_UNLOAD)  { stepPeriod = (float)stepPeriod * PULLEY_ACCELERATION_X; }
+        if (_steps < steps_dec+steps_extra  &&  stepPeriod < PULLEY_DELAY_PRIME)  { stepPeriod = (float)stepPeriod / PULLEY_ACCELERATION_X; }
 
         if (digitalRead(A1) == 0) _endstop_hit++;
         delay = stepPeriod - (micros() - now);
@@ -163,12 +160,9 @@ void motion_feed_to_bondtech()
 #ifdef SSD_DISPLAY
     display_message(MSG_LOADING);
 #endif
-    uint16_t stepPeriodPrime = get_pulley_delay(PULLEY_RATE_PRIME); //inital microstep period in microseconds
-    uint16_t stepPeriodLoad = get_pulley_delay(PULLEY_RATE_LOAD);
-    uint16_t stepPeriodExtruder = get_pulley_delay(PULLEY_RATE_EXTRUDER);
     uint16_t steps = get_pulley_steps(FILAMENT_BOWDEN_MM);
-    uint16_t steps_acc = get_pulley_acceleration_steps(stepPeriodPrime, stepPeriodLoad);
-    uint16_t steps_dec = get_pulley_acceleration_steps(stepPeriodLoad, stepPeriodExtruder);
+    uint16_t steps_acc = get_pulley_acceleration_steps(PULLEY_DELAY_PRIME, PULLEY_DELAY_LOAD);
+    uint16_t steps_dec = get_pulley_acceleration_steps(PULLEY_DELAY_LOAD, PULLEY_DELAY_EXTRUDER);
     uint16_t steps_extra = get_pulley_steps(10);
     
     const uint8_t tries = 2;
@@ -181,16 +175,16 @@ void motion_feed_to_bondtech()
         }
 #endif
         set_pulley_dir_push();
-        uint16_t delay = stepPeriodPrime;
-        uint16_t stepPeriod = stepPeriodPrime;
+        uint16_t delay = PULLEY_DELAY_PRIME;
+        uint16_t stepPeriod = PULLEY_DELAY_PRIME;
 
         for (uint16_t i = 0; i < steps+steps_extra; i++)
         {
             delayMicroseconds(delay);
             unsigned long now = micros();
 
-            if (i < steps_acc  &&  stepPeriod > stepPeriodLoad)  { stepPeriod = (float)stepPeriod * PULLEY_ACCELERATION_X; }
-            if (i > steps-steps_dec-steps_extra  &&  stepPeriod < stepPeriodExtruder)  { stepPeriod = (float)stepPeriod / PULLEY_ACCELERATION_X; }
+            if (i < steps_acc  &&  stepPeriod > PULLEY_DELAY_LOAD)  { stepPeriod = (float)stepPeriod * PULLEY_ACCELERATION_X; }
+            if (i > steps-steps_dec-steps_extra  &&  stepPeriod < PULLEY_DELAY_EXTRUDER)  { stepPeriod = (float)stepPeriod / PULLEY_ACCELERATION_X; }
 
            if ('A' == getc(uart_com))
             {

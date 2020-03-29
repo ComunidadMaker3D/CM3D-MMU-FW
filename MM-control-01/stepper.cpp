@@ -33,14 +33,6 @@ static void set_idler_dir_up();
 static void move(int _idler, int _selector, int _pulley);
 
 
-//! @brief Compute delay based on mm/s
-//! @param mms mm/s feedrate for pulley
-//! @return delay in ms
-int get_pulley_delay(float mms)
-{
-  return floor((float)1000000 / (mms*(float)PULLEY_STEPS_PER_MM));
-}
-
 //! @brief Compute pulley steps based on distance
 //! @param mm total length of movement of filament
 //! @return steps

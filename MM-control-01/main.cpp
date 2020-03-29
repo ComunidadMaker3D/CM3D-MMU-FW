@@ -109,12 +109,12 @@ static void signal_filament_present()
     delay(300);
 }
 
-void signal_load_failure()
+void signal_load_failure(uint16_t rate = 800)
 {
     shr16_set_led(0x000);
-    delay(800);
+    delay(rate);
     shr16_set_led(2 << 2 * (4 - active_extruder));
-    delay(800);
+    delay(rate);
 }
 
 void signal_ok_after_load_failure()

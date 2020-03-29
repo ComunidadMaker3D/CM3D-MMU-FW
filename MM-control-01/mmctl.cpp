@@ -33,9 +33,7 @@ const uint8_t finda_limit = 10;
 
 //! @brief Pull filament back from FINDA
 void retract_filament(int extra_steps) {
-  int _steps = get_pulley_steps(FILAMENT_RETRACT_MM) + extra_steps;
-  uint16_t _delay = get_pulley_delay(PULLEY_RATE_PRIME);
-  
+  int _steps = get_pulley_steps(FILAMENT_RETRACT_MM) + extra_steps;  
 #ifdef SSD_DISPLAY
   display_message(MSG_RETRACTING);
 #endif
@@ -45,7 +43,7 @@ void retract_filament(int extra_steps) {
   for (int i=_steps; i>0; i--)
   {
     do_pulley_step();
-    delayMicroseconds(_delay);
+    delayMicroseconds(PULLEY_DELAY_PRIME);
   }
 }
 
@@ -61,8 +59,6 @@ void retract_filament(int extra_steps) {
 bool feed_filament(bool timeout)
 {
 	bool loaded = false;
-  uint16_t _delay = get_pulley_delay(PULLEY_RATE_PRIME);
-
 	motion_engage_idler();
 	set_pulley_dir_push();
 	if(tmc2130_mode == NORMAL_MODE)
@@ -109,7 +105,7 @@ bool feed_filament(bool timeout)
             {
                 break;
             }
-            delayMicroseconds(_delay);
+            delayMicroseconds(PULLEY_DELAY_PRIME);
         }
 	}
 
@@ -287,7 +283,6 @@ void eject_filament(uint8_t filament)
 {
     active_extruder = filament;
     uint8_t selector_position = min(filament + 3, EXTRUDERS);
-    uint16_t _delay = get_pulley_delay(PULLEY_RATE_EXTRUDER);
 
     if (isFilamentLoaded)  unload_filament_withSensor();
 
@@ -302,7 +297,7 @@ void eject_filament(uint8_t filament)
     {
         do_pulley_step();
         steps++;
-        delayMicroseconds(_delay);
+        delayMicroseconds(PULLEY_DELAY_EXTRUDER);
     }
 
     motion_disengage_idler();
@@ -312,8 +307,6 @@ void eject_filament(uint8_t filament)
 //! @brief restore state before eject filament
 void recover_after_eject()
 {
-    uint16_t _delay = get_pulley_delay(PULLEY_RATE_EXTRUDER);
-    
     tmc2130_init_axis(AX_PUL, tmc2130_mode);
     motion_engage_idler();
     set_pulley_dir_pull();
@@ -321,7 +314,7 @@ void recover_after_eject()
     {
         do_pulley_step();
         steps++;
-        delayMicroseconds(_delay);
+        delayMicroseconds(PULLEY_DELAY_EXTRUDER);
     }
     motion_disengage_idler();
 
@@ -334,7 +327,6 @@ static bool checkOk()
     bool _ret = false;
     int _steps = 0;
     int _endstop_hit = 0;
-    uint16_t _delay = get_pulley_delay(PULLEY_RATE_PRIME);
 
 
     // filament in FINDA, let's try to unload it
@@ -346,7 +338,7 @@ static bool checkOk()
         do
         {
             do_pulley_step();
-            delayMicroseconds(_delay);
+            delayMicroseconds(PULLEY_DELAY_PRIME);
             if (digitalRead(A1) == 0) _endstop_hit++;
             _steps--;
         } while (_steps > 0 && _endstop_hit < finda_limit);
@@ -362,7 +354,7 @@ static bool checkOk()
         do
         {
             do_pulley_step();
-            delayMicroseconds(_delay);
+            delayMicroseconds(PULLEY_DELAY_PRIME);
             if (digitalRead(A1) == 1) _endstop_hit++;
             _steps--;
         } while (_steps > 0 && _endstop_hit < finda_limit);
@@ -405,13 +397,115 @@ bool mmctl_IsOk()
     return retval;
 }
 
+
+void retry_finda(boolean state) {
+  // filament did not arrived at FINDA, let's try to correct that
+  // state  0:push  1:pull
+#ifdef SSD_DISPLAY
+  display_count_incr((state)?COUNTER::UNLOAD_RETRY:COUNTER::LOAD_RETRY);
+#endif
+  
+  for (int i = 6; i > 0; i--)
+  {
+#ifdef SSD_DISPLAY
+    display_error((state)?MSG_UNLOADING:MSG_PRIMING, 7-i);
+#endif
+    uint8_t _endstop_hit = 0;
+    if (digitalRead(A1) == state)
+    {
+      // attempt to correct
+      (state)?set_pulley_dir_push():set_pulley_dir_pull();
+      for (int i = get_pulley_steps(10); i >= 0; i--)
+      {
+        do_pulley_step();
+        delayMicroseconds(PULLEY_DELAY_PRIME/2);
+      }
+
+      (state)?set_pulley_dir_pull():set_pulley_dir_push();
+      uint16_t _steps = get_pulley_steps( (state)?20:FILAMENT_BOWDEN_MM/2 );
+      do
+      {
+        do_pulley_step();
+        _steps++;
+        delayMicroseconds(PULLEY_DELAY_PRIME);
+        if (!digitalRead(A1) == state) _endstop_hit++;
+      } while (_endstop_hit<finda_limit && _steps > 0);
+    }
+    delay(100);
+  }
+}
+
+
+void interactive_load_failure(boolean state) {
+  // filament action failed; wait on user interaction
+  // state  0:load  1:unload
+  bool _continue = false;
+  bool _isOk = false;
+#ifdef SSD_DISPLAY
+  display_count_incr((state)?COUNTER::UNLOAD_FAIL:COUNTER::LOAD_FAIL);
+  display_error((state)?MSG_UNLOADERROR:MSG_LOADERROR);
+#endif
+  
+  motion_disengage_idler();
+  do
+  {
+      if (!_isOk)
+      {
+          signal_load_failure((state)?100:800);
+      }
+      else
+      {
+          signal_ok_after_load_failure();
+      }
+
+
+      switch (buttonPressed())
+      {
+        case Btn::left:
+          // just move filament little bit
+          motion_engage_idler();
+          (state)?set_pulley_dir_pull():set_pulley_dir_push();
+
+          for (int i = 0; i < 200; i++)
+          {
+              do_pulley_step();
+              delayMicroseconds(PULLEY_DELAY_PRIME);
+          }
+          motion_disengage_idler();
+          break;
+        case Btn::middle:
+          // check if everything is ok
+          motion_engage_idler();
+          _isOk = checkOk();
+          motion_disengage_idler();
+          break;
+        case Btn::right:
+          // continue with unloading
+          motion_engage_idler();
+          _isOk = checkOk();
+          motion_disengage_idler();
+
+          if (_isOk)
+          {
+              _continue = true;
+          }
+          break;
+        default:
+          break;
+      }
+  } while (!_continue);
+
+  shr16_set_led(1 << 2 * (4 - active_extruder));
+  motion_engage_idler();
+}
+
+
 //! @brief Load filament through bowden
 //! @param disengageIdler
 //!  * true Disengage idler after movement
 //!  * false Do not disengage idler after movement
 void load_filament_withSensor(bool disengageIdler)
 {
-    uint16_t _delay = get_pulley_delay(PULLEY_RATE_PRIME);
     FilamentLoaded::set(active_extruder);
     motion_engage_idler();
 
@@ -420,7 +514,6 @@ void load_filament_withSensor(bool disengageIdler)
     set_pulley_dir_push();
 
     int _loadSteps = 0;
-    int _endstop_hit = 0;
 
     // load filament until FINDA senses end of the filament, means correctly loaded into the selector
     // we can expect something like 570 steps to get in sensor
@@ -431,117 +524,24 @@ void load_filament_withSensor(bool disengageIdler)
     {
         do_pulley_step();
         _loadSteps++;
-        delayMicroseconds(_delay);
+        delayMicroseconds(PULLEY_DELAY_PRIME);
     } while (digitalRead(A1) == 0 && _loadSteps < 1500);
 
 
     // filament did not arrived at FINDA, let's try to correct that
     if (digitalRead(A1) == 0)
     {
-#ifdef SSD_DISPLAY
-		display_count_incr(COUNTER::LOAD_RETRY);
-#endif
-        for (int i = 6; i > 0; i--)
-        {
-#ifdef SSD_DISPLAY
-            display_error(MSG_PRIMING, 7-i);
-#endif
-            if (digitalRead(A1) == 0)
-            {
-                // attempt to correct
-                set_pulley_dir_pull();
-                for (int i = 200; i >= 0; i--)
-                {
-                    do_pulley_step();
-                    delayMicroseconds(_delay/2);
-                }
-
-                set_pulley_dir_push();
-                _loadSteps = 0;
-                do
-                {
-                    do_pulley_step();
-                    _loadSteps++;
-                    delayMicroseconds(_delay);
-                    if (digitalRead(A1) == 1) _endstop_hit++;
-                } while (_endstop_hit<finda_limit && _loadSteps < 500);
-            }
-        }
+      retry_finda(0);
     }
 
     // still not at FINDA, error on loading, let's wait for user input
     if (digitalRead(A1) == 0)
     {
-        bool _continue = false;
-        bool _isOk = false;
-#ifdef SSD_DISPLAY
-        display_count_incr(COUNTER::LOAD_FAIL);
-        display_error(MSG_LOADERROR);
-#endif
-		
-        motion_disengage_idler();
-        do
-        {
-            if (!_isOk)
-            {
-                signal_load_failure();
-            }
-            else
-            {
-                signal_ok_after_load_failure();
-            }
-
-            switch (buttonPressed())
-            {
-                case Btn::left:
-                    // just move filament little bit
-                    motion_engage_idler();
-                    set_pulley_dir_push();
-
-                    for (int i = 0; i < 200; i++)
-                    {
-                        do_pulley_step();
-                        delayMicroseconds(_delay);
-                    }
-                    motion_disengage_idler();
-                    break;
-                case Btn::middle:
-                    // check if everything is ok
-                    motion_engage_idler();
-                    _isOk = checkOk();
-                    motion_disengage_idler();
-                    break;
-                case Btn::right:
-                    // continue with loading
-                    motion_engage_idler();
-                    _isOk = checkOk();
-                    motion_disengage_idler();
-
-                    if (_isOk) //pridat do podminky flag ze od tiskarny prislo continue
-                    {
-                        _continue = true;
-                    }
-                    break;
-                default:
-                    break;
-            }
-
-        } while ( !_continue );
-
-        motion_engage_idler();
-        set_pulley_dir_push();
-        _loadSteps = 0;
-        do
-        {
-            do_pulley_step();
-            _loadSteps++;
-            delayMicroseconds(_delay);
-        } while (digitalRead(A1) == 0 && _loadSteps < 1500);
-        // ?
+      interactive_load_failure(0);
     }
     else
     {
-        // nothing
+      // nothing
     }
 
     motion_feed_to_bondtech();
@@ -557,7 +557,6 @@ void load_filament_withSensor(bool disengageIdler)
 void unload_filament_withSensor(bool disengageIdler=true)
 {
     // unloads filament from extruder - filament is above Bondtech gears
-    uint16_t _delay = get_pulley_delay(PULLEY_RATE_PRIME);
     tmc2130_init_axis(AX_PUL, tmc2130_mode);
 
     motion_engage_idler(); // if idler is in parked position un-park him get in contact with filament
@@ -575,133 +574,32 @@ void unload_filament_withSensor(bool disengageIdler=true)
         }
     }
 
-
-
     // move a little bit so it is not a grinded hole in filament
     for (int i = finda_limit; i > 0; i--)
     {
         do_pulley_step();
-        delayMicroseconds(_delay);
+        delayMicroseconds(PULLEY_DELAY_PRIME);
     }
-
-
 
     // FINDA is still sensing filament, let's try to unload it once again
     if (digitalRead(A1) == 1)
     {
-#ifdef SSD_DISPLAY
-        display_count_incr(COUNTER::UNLOAD_RETRY);
-#endif
-        for (int i = 6; i > 0; i--)
-        {
-#ifdef SSD_DISPLAY
-			display_message(MSG_UNLOADING, 7-i);
-#endif
-            if (digitalRead(A1) == 1)
-            {
-                set_pulley_dir_push();
-                for (int i = 150; i > 0; i--)
-                {
-                    do_pulley_step();
-                    delayMicroseconds(_delay/2);
-                }
-
-                set_pulley_dir_pull();
-                int _steps = 4000;
-                uint8_t _endstop_hit = 0;
-                do
-                {
-                    do_pulley_step();
-                    _steps--;
-                    delayMicroseconds(_delay);
-                    if (digitalRead(A1) == 0) _endstop_hit++;
-                } while (_endstop_hit < finda_limit && _steps > 0);
-            }
-            delay(100);
-        }
-
+      retry_finda(1);
     }
-
-
 
     // error, wait for user input
     if (digitalRead(A1) == 1)
     {
-        bool _continue = false;
-        bool _isOk = false;
-#ifdef SSD_DISPLAY
-        display_count_incr(COUNTER::UNLOAD_FAIL);
-        display_error(MSG_UNLOADERROR);
-#endif
-        
-        motion_disengage_idler();
-        do
-        {
-            shr16_set_led(0x000);
-            delay(100);
-            if (!_isOk)
-            {
-                shr16_set_led(2 << 2 * (4 - active_extruder));
-            }
-            else
-            {
-                shr16_set_led(1 << 2 * (4 - active_extruder));
-                delay(100);
-                shr16_set_led(2 << 2 * (4 - active_extruder));
-                delay(100);
-            }
-            delay(100);
-
-
-            switch (buttonPressed())
-            {
-            case Btn::left:
-                // just move filament little bit
-                motion_engage_idler();
-                set_pulley_dir_pull();
-
-                for (int i = 0; i < 200; i++)
-                {
-                    do_pulley_step();
-                    delayMicroseconds(_delay);
-                }
-                motion_disengage_idler();
-                break;
-            case Btn::middle:
-                // check if everything is ok
-                motion_engage_idler();
-                _isOk = checkOk();
-                motion_disengage_idler();
-                break;
-            case Btn::right:
-                // continue with unloading
-                motion_engage_idler();
-                _isOk = checkOk();
-                motion_disengage_idler();
-
-                if (_isOk)
-                {
-                    _continue = true;
-                }
-                break;
-            default:
-                break;
-            }
-
-
-        } while (!_continue);
-
-        shr16_set_led(1 << 2 * (4 - active_extruder));
-        motion_engage_idler();
+      interactive_load_failure(1);
     }
     else
     {
-        // correct unloading
-        // unload to PTFE tube
-        retract_filament();
+      // correct unloading
+      // unload to PTFE tube
+      retract_filament();
     }
     if (disengageIdler) {
-      	motion_disengage_idler();
+      motion_disengage_idler();
     }
     tmc2130_disable_axis(AX_PUL, tmc2130_mode);
     isFilamentLoaded = false; // filament unloaded
@@ -709,6 +607,7 @@ void unload_filament_withSensor(bool disengageIdler=true)
     display_message(MSG_IDLE);
 #endif
 }
+
 
 //! @brief Do 38.20 mm pulley push
 //!
@@ -733,7 +632,7 @@ void load_filament_inPrinter()
     motion_engage_idler();
     set_pulley_dir_push();
 
-    const unsigned long fist_segment_delay = get_pulley_delay(PULLEY_RATE_EXTRUDER);
+    const unsigned long fist_segment_delay = PULLEY_DELAY_EXTRUDER;
 
     tmc2130_init_axis(AX_PUL, tmc2130_mode);
 
