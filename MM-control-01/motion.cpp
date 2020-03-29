@@ -128,32 +128,33 @@ static void unload_to_finda()
 #ifdef SSD_DISPLAY
     display_message(MSG_UNLOADING);
 #endif
-    int delay = 4500*PULLEY_SPEED_ADJ; //microstep period in microseconds
-
+    uint16_t stepPeriodPrime = get_pulley_delay(PULLEY_RATE_PRIME); //inital microstep period in microseconds
+    uint16_t stepPeriodUnload = get_pulley_delay(PULLEY_RATE_UNLOAD);
+    uint16_t stepPeriodExtruder = get_pulley_delay(PULLEY_RATE_EXTRUDER);
+    uint16_t steps = get_pulley_steps(FILAMENT_BOWDEN_MM);
+    uint16_t steps_acc = get_pulley_acceleration_steps(stepPeriodPrime, stepPeriodUnload);
+    uint16_t steps_dec = get_pulley_acceleration_steps(stepPeriodUnload, stepPeriodPrime);
+    uint16_t steps_extra = get_pulley_steps(10);
     uint8_t _endstop_hit = 0;
-
-    int _unloadSteps = BowdenLength::get()/PULLEY_SPEED_ADJ + 250;    //~4750
-    const int _first_point = (float)_unloadSteps*(float)0.2;
-    const int _second_point = (float)_unloadSteps*(float)0.85;
-
+    
     set_pulley_dir_pull();
+    uint16_t delay = stepPeriodPrime;
+    uint16_t stepPeriod = stepPeriodPrime;
+    uint16_t _steps = steps + steps_extra;
 
-    while (_endstop_hit < finda_limit && _unloadSteps > 0)
+    while (_endstop_hit < finda_limit && _steps > 0)
     {
-        do_pulley_step();
-        _unloadSteps--;
-
-        if (_unloadSteps < 1400/PULLEY_SPEED_ADJ && delay < 6000/PULLEY_SPEED_ADJ) delay += 3*PULLEY_SPEED_ADJ;
-        if (_unloadSteps < _first_point && delay < 2500/PULLEY_SPEED_ADJ) delay += 2*PULLEY_SPEED_ADJ;
-        if (_unloadSteps < _second_point && _unloadSteps > 5000/PULLEY_SPEED_ADJ)
-        {
-            if (delay > 550/PULLEY_SPEED_ADJ) delay -= 1*PULLEY_SPEED_ADJ;
-            if (delay > 330/PULLEY_SPEED_ADJ && (NORMAL_MODE == tmc2130_mode)) delay -= 1*PULLEY_SPEED_ADJ;
-        }
-
         delayMicroseconds(delay);
-        if (digitalRead(A1) == 0) _endstop_hit++;
+        unsigned long now = micros();
+        
+        do_pulley_step();
 
+        if (_steps > steps-steps_acc  &&  stepPeriod > stepPeriodUnload)  { stepPeriod = (float)stepPeriod * PULLEY_ACCELERATION_X; }
+        if (_steps < steps_dec+steps_extra  &&  stepPeriod < stepPeriodPrime)  { stepPeriod = (float)stepPeriod / PULLEY_ACCELERATION_X; }
+
+        if (digitalRead(A1) == 0) _endstop_hit++;
+        delay = stepPeriod - (micros() - now);
+        _steps--;
     }
 }
 
@@ -162,36 +163,36 @@ void motion_feed_to_bondtech()
 #ifdef SSD_DISPLAY
     display_message(MSG_LOADING);
 #endif
-    int stepPeriod = get_pulley_delay(PULLEY_RATE_PRIME); //inital microstep period in microseconds
-    uint16_t steps = BowdenLength::get()/PULLEY_SPEED_ADJ;
-
+    uint16_t stepPeriodPrime = get_pulley_delay(PULLEY_RATE_PRIME); //inital microstep period in microseconds
+    uint16_t stepPeriodLoad = get_pulley_delay(PULLEY_RATE_LOAD);
+    uint16_t stepPeriodExtruder = get_pulley_delay(PULLEY_RATE_EXTRUDER);
+    uint16_t steps = get_pulley_steps(FILAMENT_BOWDEN_MM);
+    uint16_t steps_acc = get_pulley_acceleration_steps(stepPeriodPrime, stepPeriodLoad);
+    uint16_t steps_dec = get_pulley_acceleration_steps(stepPeriodLoad, stepPeriodExtruder);
+    uint16_t steps_extra = get_pulley_steps(10);
+    
     const uint8_t tries = 2;
     for (uint8_t tr = 0; tr <= tries; ++tr)
     {
-        if (tr > 0) {
 #ifdef SSD_DISPLAY
+        if (tr > 0) {
           display_count_incr(COUNTER::LOAD_RETRY);
           display_error(MSG_LOADING, tr);
-#endif
         }
-        
+#endif
         set_pulley_dir_push();
-        unsigned long delay = get_pulley_delay(PULLEY_RATE_PRIME);
+        uint16_t delay = stepPeriodPrime;
+        uint16_t stepPeriod = stepPeriodPrime;
 
-        for (uint16_t i = 0; i < steps; i++)
+        for (uint16_t i = 0; i < steps+steps_extra; i++)
         {
             delayMicroseconds(delay);
             unsigned long now = micros();
 
-            if (i < 4000/PULLEY_SPEED_ADJ)
-            {
-                if (stepPeriod > 2600/PULLEY_SPEED_ADJ) stepPeriod -= 4*PULLEY_SPEED_ADJ;
-                if (stepPeriod > 1300/PULLEY_SPEED_ADJ) stepPeriod -= 2*PULLEY_SPEED_ADJ;
-                if (stepPeriod > 650/PULLEY_SPEED_ADJ) stepPeriod -= 1*PULLEY_SPEED_ADJ;
-                if (stepPeriod > 350/PULLEY_SPEED_ADJ && (NORMAL_MODE == tmc2130_mode) && s_has_door_sensor) stepPeriod -= 1*PULLEY_SPEED_ADJ;
-            }
-            if (i > (steps - 800/PULLEY_SPEED_ADJ) && stepPeriod < 2600/PULLEY_SPEED_ADJ) stepPeriod += 10*PULLEY_SPEED_ADJ;
-            if ('A' == getc(uart_com))
+            if (i < steps_acc  &&  stepPeriod > stepPeriodLoad)  { stepPeriod = (float)stepPeriod * PULLEY_ACCELERATION_X; }
+            if (i > steps-steps_dec-steps_extra  &&  stepPeriod < stepPeriodExtruder)  { stepPeriod = (float)stepPeriod / PULLEY_ACCELERATION_X; }
+
+           if ('A' == getc(uart_com))
             {
                 s_has_door_sensor = true;
                 tmc2130_disable_axis(AX_PUL, tmc2130_mode);

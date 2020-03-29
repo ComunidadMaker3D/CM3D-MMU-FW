@@ -56,6 +56,16 @@ int get_selector_steps(int current_filament, int next_filament)
     return (((current_filament - next_filament) * selector_steps) * -1);
 }
 
+//! @brief Compute number of steps to reach full speed
+//! @param delay_start Initial delay
+//! @param delay_end Final delay
+//! @return Steps
+int get_pulley_acceleration_steps(int16_t delay_start, int16_t delay_end) {
+  float delay_diff = (float)min(delay_start, delay_end) / (float)max(delay_start, delay_end);
+  return ceil( log(delay_diff) / log(PULLEY_ACCELERATION_X) );
+}
+
+
 //! @brief Compute steps for idler needed to change filament
 //! @param current_filament Currently selected filament
 //! @param next_filament Filament to be selected
@@ -171,14 +181,15 @@ bool home_selector()
 //! @brief Home both idler and selector if already not done
 void home()
 {
+#ifndef NO_HOME
     home_idler();
-
     home_selector();
-
+#else
+    isIdlerParked = true;
+    park_idler(false);
+#endif
     shr16_set_led(0x155);
-
     shr16_set_led(0x000);
-
     shr16_set_led(1 << 2 * (4-active_extruder));
 }
  
