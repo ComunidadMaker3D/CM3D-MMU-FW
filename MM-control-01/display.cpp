@@ -24,9 +24,18 @@
   const char MSG_LOADERROR[] = "Load Fail";
   const char MSG_UNLOADERROR[] = "Unload Fail";
   const char MSG_F[] = "F";
-  const char MSG_AXIS_PULLEY[] = ">Pulley";
-  const char MSG_AXIS_SELECTOR[] = ">Selector";
-  const char MSG_AXIS_IDLER[] = ">Idler";  
+  const char MSG_AXIS_PUL[] = ">Pulley";
+  const char MSG_AXIS_SEL[] = ">Selector";
+  const char MSG_AXIS_IDL[] = ">Idler";  
+
+  const char OPT_MENU_DECR[] = "-";
+  const char OPT_MENU_INCR[] = "+";
+  const char OPT_MENU_REHOME[] = "REHOME";
+  const char OPT_MENU_OK[] = "OK";
+  const char OPT_MENU_MAIN[] = "MAIN";
+  const char OPT_MENU_PUL[] = "PUL";
+  const char OPT_MENU_SEL[] = "SEL";
+  const char OPT_MENU_IDL[] = "IDL";
 
   uint16_t current_display_cmd = 0;
   uint16_t current_display_counts[5] = {0,0,0,0,0};
@@ -195,12 +204,36 @@
     sprintf(text, "L:%d/%d U:%d/%d S:%d", current_display_counts[0], current_display_counts[1], current_display_counts[2], current_display_counts[3], current_display_counts[4]);
     
     oled.setFont(Adafruit5x7);
-    uint8_t x = (127-oled.strWidth(text)) / 2;
+    oled.setCursor(0, 7);
+    oled.write("                      ");
     
+    uint8_t x = (127-oled.strWidth(text)) / 2;
     oled.setCursor(x, 7);
     oled.write(text);
   }
-  
+
+
+  void display_menu_options(char *opta, char *optb, char *optc) {
+    oled.setInvertMode(true);
+    oled.setFont(Adafruit5x7);
+    oled.setCursor(0, 7);
+    oled.write("                      ");
+
+    oled.setCursor(0, 7);
+    oled.write("<");
+    oled.setCursor(oled.col()+1, 7);
+    oled.write(opta);
+
+    oled.setCursor(63-oled.strWidth(optb)/2, 7);
+    oled.write(optb);
+
+    oled.setCursor(127-oled.strWidth(optc)-oled.strWidth(">")-1, 7);
+    oled.write(optc);
+    oled.setCursor(oled.col()+1, 7);
+    oled.write(">");
+    
+    oled.setInvertMode(false);
+  }
   
   void display_count_incr(COUNTER i) {
     current_display_counts[(uint8_t)i]++;

@@ -413,6 +413,13 @@ void loop()
         }
         break;
     case S::Wait:
+#ifdef SSD_DISPLAY
+        display_error(MSG_WAITING);
+        enhanced_interactive_menu();
+        state = S::Idle;
+        fprintf_P(uart_com, PSTR("ok\n"));
+        display_message(MSG_IDLE);
+#else
         signal_load_failure();
         switch(buttonClicked())
         {
@@ -426,6 +433,7 @@ void loop()
         default:
             break;
         }
+#endif
         break;
     case S::WaitOk:
         signal_ok_after_load_failure();
@@ -592,9 +600,6 @@ void process_commands(FILE* inout)
         {
             if (value == 0) //! W0 Wait for user click
             {
-#ifdef SSD_DISPLAY
-                display_error(MSG_WAITING);
-#endif
                 state = S::Wait;
             }
         }

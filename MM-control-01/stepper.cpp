@@ -195,7 +195,7 @@ void home()
 
 void move(int _idler, int _selector, int _pulley)
 {
-  int _acc = (abs(_idler)>1 || abs(_selector)>1) ? 132 : 0;
+  int _acc = (abs(_idler)>1 || abs(_selector)>1) ? 128 : 0;
   int delay = (abs(_pulley)>1) ? PULLEY_DELAY_PRIME : 1152;
 
 	// gets steps to be done and set direction

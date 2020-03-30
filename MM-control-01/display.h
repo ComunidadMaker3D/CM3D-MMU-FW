@@ -32,9 +32,18 @@ extern const char MSG_ERROR[];
 extern const char MSG_LOADERROR[];
 extern const char MSG_UNLOADERROR[];
 extern const char MSG_F[];
-extern const char MSG_AXIS_PULLEY[];
-extern const char MSG_AXIS_SELECTOR[];
-extern const char MSG_AXIS_IDLER[];
+extern const char MSG_AXIS_PUL[];
+extern const char MSG_AXIS_SEL[];
+extern const char MSG_AXIS_IDL[];
+
+extern const char OPT_MENU_DECR[];
+extern const char OPT_MENU_INCR[];
+extern const char OPT_MENU_REHOME[];
+extern const char OPT_MENU_OK[];
+extern const char OPT_MENU_MAIN[];
+extern const char OPT_MENU_PUL[];
+extern const char OPT_MENU_SEL[];
+extern const char OPT_MENU_IDL[];
 
 enum class COUNTER : uint8_t {LOAD_RETRY, LOAD_FAIL, UNLOAD_RETRY, UNLOAD_FAIL, SUCCESS};
 
@@ -50,6 +59,7 @@ extern void display_message(char *msg, int8_t v);
 extern void display_message(char *msg, int8_t v, boolean err);
 extern void display_error(char *msg);
 extern void display_error(char *msg, int8_t v);
+extern void display_menu_options(char *opta, char *optb, char *optc);
 extern void display_status();
 extern void display_count_incr(COUNTER i);
 

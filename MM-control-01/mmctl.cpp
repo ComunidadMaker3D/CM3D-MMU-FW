@@ -405,7 +405,7 @@ void retry_finda(boolean state) {
   display_count_incr((state)?COUNTER::UNLOAD_RETRY:COUNTER::LOAD_RETRY);
 #endif
   
-  for (int i = 0; i > 0; i--)
+  for (int i = 6; i > 0; i--)
   {
 #ifdef SSD_DISPLAY
     display_error((state)?MSG_UNLOADING:MSG_PRIMING, 7-i);
@@ -449,10 +449,7 @@ int8_t modeIncr(int8_t mode, uint8_t count) {
   return (mode+1) % count;
 }
 
-void enhanced_interactive_menu(boolean state) {
-  display_count_incr((state)?COUNTER::UNLOAD_FAIL:COUNTER::LOAD_FAIL);
-  display_error((state)?MSG_UNLOADERROR:MSG_LOADERROR);
-  
+void enhanced_interactive_menu() {
   bool _continue = false;
   bool _isOk = false;
   int8_t mode = 3;
@@ -460,42 +457,49 @@ void enhanced_interactive_menu(boolean state) {
   int8_t lastMode = mode;
   Btn currentButton = Btn::none;
   Btn lastButton = Btn::none;
-  bool buttonDebounce = true;
+  unsigned long lastButtonPress;
   bool updateDisplay = false;
   
   motion_disengage_idler();
+  display_menu_options(OPT_MENU_REHOME, OPT_MENU_PUL, OPT_MENU_OK);
   
   do
   {
     if (lastMode != mode) {
-      if (mode == 0) {
+      if (mode == AX_PUL) {
         motion_engage_idler();
-        buttonDebounce = false;
       }
-      if (lastMode == 0) {
+      if (lastMode == AX_PUL) {
         motion_disengage_idler();
-        buttonDebounce = true;
       }
       lastMode = mode;
       updateDisplay = true;
     }
 
-    if (buttonPressed() != lastButton  ||  !buttonDebounce) {
+    if (buttonPressed() != lastButton) {
       if (buttonPressed() != Btn::none) {
-        delay(ButtonHold/2);
+        delay(ButtonHold/4);
       } else {
         currentButton = Btn::none;
       }
       if (buttonPressed() != Btn::none) {
         currentButton = buttonPressed();
-        lastButton = currentButton;
+        lastButtonPress = millis();
+      } else {
+        currentButton = Btn::none;
       }
+      lastButton = currentButton;
+    } else if ( millis()-lastButtonPress > 750  &&  (Btn::left|Btn::right) & buttonPressed()  &&  mode < 3 ) {
+      currentButton = buttonPressed();
     }
     
     switch(mode) {
       // "main" menu
       case 3:
-        if (updateDisplay) { display_error(MSG_WAITING); }
+        if (updateDisplay) {
+          display_error(MSG_WAITING);
+          display_menu_options(OPT_MENU_REHOME, OPT_MENU_PUL, OPT_MENU_OK);
+        }
         switch (currentButton) {
           case Btn::left:
             rehome();
@@ -516,24 +520,32 @@ void enhanced_interactive_menu(boolean state) {
         break;
 
       // move pulley
-      case 0:
-        if (updateDisplay) { display_error(MSG_AXIS_PULLEY); }
+      case AX_PUL:
+        if (updateDisplay) {
+          display_error(MSG_AXIS_PUL);
+          display_menu_options(OPT_MENU_DECR, OPT_MENU_SEL, OPT_MENU_INCR);
+        }
         switch (currentButton) {
           case Btn::left:
             move(0, 0, get_pulley_steps(-1));    // move 1mm
+            delayMicroseconds(500);
             break;
           case Btn::middle:
             mode = modeIncr(mode, modeCount);
             break;
           case Btn::right:
             move(0, 0, get_pulley_steps(1));
+            delayMicroseconds(500);
             break;
         }
         break;
       
       // move selector
-      case 1:
-        if (updateDisplay) { display_error(MSG_AXIS_SELECTOR); }
+      case AX_SEL:
+        if (updateDisplay) {
+          display_error(MSG_AXIS_SEL);
+          display_menu_options(OPT_MENU_DECR, OPT_MENU_IDL, OPT_MENU_INCR);
+        }
         switch (currentButton) {
           case Btn::left:
             move(0, -25, 0);    // move ~.5mm
@@ -548,51 +560,25 @@ void enhanced_interactive_menu(boolean state) {
         break;
 
       // move idler
-      case 2:
-        if (updateDisplay) { display_error(MSG_AXIS_IDLER); }
+      case AX_IDL:
+        if (updateDisplay) {
+          display_error(MSG_AXIS_IDL);
+          display_menu_options(OPT_MENU_DECR, OPT_MENU_MAIN, OPT_MENU_INCR);
+        }
         switch (currentButton) {
           case Btn::left:
             move(9, 0, 0);    // move ~1°
+            delayMicroseconds(500);
             break;
           case Btn::middle:
             mode = modeIncr(mode, modeCount);
             break;
           case Btn::right:
             move(-9, 0, 0);
+            delayMicroseconds(500);
             break;
         }
         break;
-/*
-      switch (buttonPressed())
-      {
-        case Btn::left:
-          // just move filament little bit
-          motion_engage_idler();
-          (state)?set_pulley_dir_pull():set_pulley_dir_push();
-
-          for (int i = 0; i < 200; i++)
-          {
-              do_pulley_step();
-              delayMicroseconds(PULLEY_DELAY_PRIME);
-          }
-          motion_disengage_idler();
-          break;
-        case Btn::middle:
-          // check if everything is ok
-          motion_engage_idler();
-          _isOk = checkOk();
-          motion_disengage_idler();
-          break;
-        case Btn::right:
-          // continue with unloading
-          motion_engage_idler();
-          _isOk = checkOk();
-          motion_disengage_idler();
-
-          break;
-        default:
-          break;
-      }*/
     }
 
     if (_isOk) {
@@ -602,15 +588,16 @@ void enhanced_interactive_menu(boolean state) {
     currentButton = Btn::none;
     updateDisplay = false;
   } while (!_continue);
-
+  
   shr16_set_led(1 << 2 * (4 - active_extruder));
+  display_status();
   motion_engage_idler();
 }
 
 
 void interactive_load_failure(boolean state) {
 #ifdef SSD_DISPLAY
-  enhanced_interactive_menu(state);
+  enhanced_interactive_menu();
   return;
 #endif
 
@@ -710,6 +697,10 @@ void load_filament_withSensor(bool disengageIdler)
     // still not at FINDA, error on loading, let's wait for user input
     if (digitalRead(A1) == 0)
     {
+#ifdef SSD_DISPLAY
+      display_count_incr(COUNTER::LOAD_FAIL);
+      display_error(MSG_LOADERROR);
+#endif
       interactive_load_failure(0);
     }
     else
@@ -763,6 +754,10 @@ void unload_filament_withSensor(bool disengageIdler=true)
     // error, wait for user input
     if (digitalRead(A1) == 1)
     {
+#ifdef SSD_DISPLAY
+      display_count_incr(COUNTER::UNLOAD_FAIL);
+      display_error(MSG_UNLOADERROR);
+#endif
       interactive_load_failure(1);
     }
     else
@@ -809,11 +804,11 @@ void load_filament_inPrinter()
 
     tmc2130_init_axis(AX_PUL, tmc2130_mode);
 
-    unsigned long delay = fist_segment_delay;
+    unsigned long _delay = fist_segment_delay;
 
     for (int i = 0; i < 770; i++)
     {
-        delayMicroseconds(delay);
+        delayMicroseconds(_delay);
         unsigned long now = micros();
 
         if ('A' == getc(uart_com))
@@ -821,10 +816,26 @@ void load_filament_inPrinter()
             motion_door_sensor_detected();
             break;
         }
+
+        if (buttonPressed() == Btn::middle)
+        {
+          //allow manual intervention; exit to failure options
+          delay(ButtonHold);  //de-bounce
+          if (buttonPressed() == Btn::middle)
+          {
+            enhanced_interactive_menu();
+            break;
+          }
+        }
+        
         do_pulley_step();
-        delay = fist_segment_delay - (micros() - now);
+        _delay = fist_segment_delay - (micros() - now);
     }
 
     tmc2130_disable_axis(AX_PUL, tmc2130_mode);
     motion_disengage_idler();
+
+#ifdef SSD_DISPLAY
+    display_message(MSG_IDLE);
+#endif
 }
