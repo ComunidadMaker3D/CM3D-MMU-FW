@@ -46,13 +46,14 @@
   void display_init() {
     //sdd1306 display
     Wire.begin();
-    Wire.setClock(400000L);
+    Wire.setClock(1000000L);
+#if OLED_RESET >= 0
     oled.begin(&Adafruit128x64, I2C_ADDRESS, OLED_RESET);
-    oled.clear();
-  
+#else
+    oled.begin(&Adafruit128x64, I2C_ADDRESS);
+#endif
     display_test();
   }
-  
   
   void display_test() {
     oled.clear();
@@ -62,6 +63,7 @@
     display_extruder(-1);
     display_status();
   }
+
   
   void display_error(char *msg) {
     display_message(msg, -1, true);

@@ -12,7 +12,7 @@
 #include "SSD1306AsciiWire.h"
 
 #define I2C_ADDRESS 0x3C
-#define OLED_RESET 7
+#define OLED_RESET -1     // if using 5-wire with reset pin, this should be 7
 
 extern const char MSG_IDLE[];
 extern const char MSG_INITIALIZING[];
