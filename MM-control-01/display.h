@@ -10,6 +10,7 @@
 #include <Wire.h>
 #include "SSD1306Ascii.h"
 #include "SSD1306AsciiWire.h"
+#include "fonts/Verdana_custom_24.h"
 
 #define I2C_ADDRESS 0x3C
 #define OLED_RESET -1     // if using 5-wire with reset pin, this should be 7

@@ -151,7 +151,7 @@
       sprintf(text, "=");
     }
     
-    oled.setFont(Verdana_digits_24);
+    oled.setFont(Verdana_custom_24);
     oled.setCursor(0, 3);
     oled.write(";;;;;;;;;;;;;;;;");
     uint8_t x = (127-oled.strWidth(text)-11) / 2;
@@ -161,7 +161,7 @@
     oled.write("F");
     
     oled.setCursor(oled.col()+2, 3);
-    oled.setFont(Verdana_digits_24);
+    oled.setFont(Verdana_custom_24);
     oled.write(text);
   }
   
@@ -178,7 +178,7 @@
     sprintf(text_old, "%d", active_extruder+1);
     sprintf(text_new, "%d", new_extruder+1);
     
-    oled.setFont(Verdana_digits_24);
+    oled.setFont(Verdana_custom_24);
     oled.setCursor(0, 3);
     oled.write(";;;;;;;;;;;;;;;;");
     uint8_t x = (127-oled.strWidth(text_old)-oled.strWidth(text_new)-11-11-12-8) / 2;
@@ -187,7 +187,7 @@
     oled.setFont(Arial_bold_14);
     oled.write(MSG_F);
     oled.setCursor(oled.col()+2, 3);
-    oled.setFont(Verdana_digits_24);
+    oled.setFont(Verdana_custom_24);
     oled.write(text_old);
     oled.setCursor(oled.col()+6, oled.row());
     oled.write(">");
@@ -195,7 +195,7 @@
     oled.setFont(Arial_bold_14);
     oled.write(MSG_F);
     oled.setCursor(oled.col()+2, 3);
-    oled.setFont(Verdana_digits_24);
+    oled.setFont(Verdana_custom_24);
     oled.write(text_new);
   
     display_transition = true;
