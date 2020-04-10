@@ -19,8 +19,8 @@ The display will show a general message describing what state/function the MMU i
 
 The data displayed includes:
 ```
-  L:n/n  Priming failures / load failures
-  U:n/n  Retract failures / unload failures
+  L:n/n  Load retries / failures
+  U:n/n  Unload retries / failures
   T:n    Total tool changes completed
 ```
 
