@@ -673,39 +673,42 @@ void load_filament_withSensor(bool disengageIdler)
 
     set_pulley_dir_push();
 
-    int _loadSteps = 0;
 
     // load filament until FINDA senses end of the filament, means correctly loaded into the selector
-    // we can expect something like 570 steps to get in sensor
+    boolean finda_success = false;
+    while (!finda_success) {
 #ifdef SSD_DISPLAY
-    display_message(MSG_PRIMING);
+      display_message(MSG_PRIMING);
 #endif
-    do
-    {
-        do_pulley_step();
-        _loadSteps++;
-        delayMicroseconds(PULLEY_DELAY_PRIME);
-    } while (digitalRead(A1) == 0 && _loadSteps < get_pulley_steps(50));
-
-
-    // filament did not arrived at FINDA, let's try to correct that
-    if (digitalRead(A1) == 0)
-    {
-      retry_finda(0);
-    }
-
-    // still not at FINDA, error on loading, let's wait for user input
-    if (digitalRead(A1) == 0)
-    {
+      int _loadSteps = 0;
+      do
+      {
+          do_pulley_step();
+          _loadSteps++;
+          delayMicroseconds(PULLEY_DELAY_PRIME);
+      } while (digitalRead(A1) == 0 && _loadSteps < get_pulley_steps(50));
+  
+  
+      // filament did not arrived at FINDA, let's try to correct that
+      if (digitalRead(A1) == 0)
+      {
+        retry_finda(0);
+      }
+  
+      // still not at FINDA, error on loading, let's wait for user input
+      if (digitalRead(A1) == 0)
+      {
 #ifdef SSD_DISPLAY
-      display_count_incr(COUNTER::LOAD_FAIL);
-      display_error(MSG_LOADERROR);
+        display_count_incr(COUNTER::LOAD_FAIL);
+        display_error(MSG_LOADERROR);
 #endif
-      interactive_load_failure(0);
-    }
-    else
-    {
-      // nothing
+        interactive_load_failure(0);
+      }
+      else
+      {
+        //success
+        finda_success = true;
+      }
     }
 
     motion_feed_to_bondtech();
@@ -714,7 +717,7 @@ void load_filament_withSensor(bool disengageIdler)
     if (disengageIdler) motion_disengage_idler();
     isFilamentLoaded = true;  // filament loaded
 #ifdef SSD_DISPLAY
-    display_message(MSG_IDLE);
+    display_message(MSG_PRINTING);
 #endif
 }
 
@@ -836,6 +839,6 @@ void load_filament_inPrinter()
     motion_disengage_idler();
 
 #ifdef SSD_DISPLAY
-    display_message(MSG_IDLE);
+    display_message(MSG_PRINTING);
 #endif
 }

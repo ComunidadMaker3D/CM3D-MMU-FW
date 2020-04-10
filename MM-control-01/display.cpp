@@ -7,6 +7,7 @@
   SSD1306AsciiWire oled;
   
   const char MSG_IDLE[] = "Idle";
+  const char MSG_PRINTING[] = "Printing";
   const char MSG_INITIALIZING[] = "Initializing";
   const char MSG_HOMING[] = "Homing";
   const char MSG_LOADING[] = "Loading";
@@ -46,7 +47,7 @@
   void display_init() {
     //sdd1306 display
     Wire.begin();
-    Wire.setClock(1000000L);
+    Wire.setClock(400000L);
 #if OLED_RESET >= 0
     oled.begin(&Adafruit128x64, I2C_ADDRESS, OLED_RESET);
 #else

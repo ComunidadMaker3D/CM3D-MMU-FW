@@ -15,6 +15,7 @@
 #define OLED_RESET -1     // if using 5-wire with reset pin, this should be 7
 
 extern const char MSG_IDLE[];
+extern const char MSG_PRINTING[];
 extern const char MSG_INITIALIZING[];
 extern const char MSG_HOMING[];
 extern const char MSG_LOADING[];
