@@ -22,13 +22,8 @@
 int active_extruder = 0;
 //! Keeps track of filament crossing selector. Selector can not be moved if filament crosses it.
 bool isFilamentLoaded = false;
-
-//! Number of pulley steps to eject and un-eject filament
-static const int eject_steps = 2500;
-
 // Number of hits on FINDA to consider loaded
 const uint8_t finda_limit = 10;
-
 
 
 //! @brief Pull filament back from FINDA
@@ -293,7 +288,7 @@ void eject_filament(uint8_t filament)
     motion_engage_idler();
     set_pulley_dir_push();
 
-    for (int steps = 0; steps < eject_steps; ++steps)
+    for (int steps = 0; steps < get_pulley_steps(FILAMENT_EJECT_MM); ++steps)
     {
         do_pulley_step();
         steps++;
@@ -310,7 +305,7 @@ void recover_after_eject()
     tmc2130_init_axis(AX_PUL, tmc2130_mode);
     motion_engage_idler();
     set_pulley_dir_pull();
-    for (int steps = 0; steps < eject_steps; ++steps)
+    for (int steps = 0; steps < get_pulley_steps(FILAMENT_EJECT_MM); ++steps)
     {
         do_pulley_step();
         steps++;

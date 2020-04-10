@@ -16,15 +16,6 @@
 int8_t filament_type[EXTRUDERS];
 
 static bool isIdlerParked = false;
-
-static const int selector_steps_last = 450;
-static const int selector_steps_after_homing = -4250;
-static const int idler_steps_after_homing = -33;  // need <45 for 12x25.2
-
-static const int selector_steps = 303;        // 50 steps/mm
-static const int idler_steps = 224;           // 25.2° / .1125
-static const int idler_parking_steps = 280;   // idler*1.5
-
 static int set_idler_direction(int _steps);
 static int set_selector_direction(int _steps);
 static int set_pulley_direction(int _steps);
@@ -47,11 +38,11 @@ int get_pulley_steps(float mm) {
 int get_selector_steps(int current_filament, int next_filament)
 {
   if (next_filament == EXTRUDERS) {
-    return (((current_filament - next_filament) * selector_steps) * -1) + selector_steps_last;
+    return (((current_filament - next_filament) * SELECTOR_STEPS) * -1) + SELECTOR_STEPS_LAST;
   } else if (current_filament == EXTRUDERS) {
-    return (((current_filament - next_filament) * selector_steps) * -1) - selector_steps_last;
+    return (((current_filament - next_filament) * SELECTOR_STEPS) * -1) - SELECTOR_STEPS_LAST;
   } else {
-    return (((current_filament - next_filament) * selector_steps) * -1);
+    return (((current_filament - next_filament) * SELECTOR_STEPS) * -1);
   }
 }
 
@@ -71,7 +62,7 @@ int get_pulley_acceleration_steps(int16_t delay_start, int16_t delay_end) {
 //! @return idler steps
 int get_idler_steps(int current_filament, int next_filament)
 {
-    return ((current_filament - next_filament) * idler_steps);
+    return ((current_filament - next_filament) * IDLER_STEPS);
 }
 
 void do_pulley_step()
@@ -124,7 +115,7 @@ bool home_idler()
 		}
 	}
 
-	move(idler_steps_after_homing, 0, 0); // move to initial position
+	move(IDLER_STEPS_AFTER_HOMING, 0, 0); // move to initial position
 
 	tmc2130_init(tmc2130_mode);
 
@@ -168,7 +159,7 @@ bool home_selector()
 		}
 	}
 
-	move(0, selector_steps_after_homing, 0); // move to initial position
+	move(0, SELECTOR_STEPS_AFTER_HOMING, 0); // move to initial position
 
     tmc2130_init(tmc2130_mode);
 
@@ -335,12 +326,12 @@ void park_idler(bool _unpark)
 {
     if (_unpark && isIdlerParked) // get idler in contact with filament
     {
-        move(idler_parking_steps, 0, 0);
+        move(IDLER_PARKLING_STEPS, 0, 0);
         isIdlerParked = false;
     }
     else if (!_unpark && !isIdlerParked) // park idler so filament can move freely
     {
-        move(idler_parking_steps*-1, 0, 0);
+        move(IDLER_PARKLING_STEPS*-1, 0, 0);
         isIdlerParked = true;
     }
 }
