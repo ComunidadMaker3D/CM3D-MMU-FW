@@ -16,12 +16,12 @@ This code has support for an optional OLED display (SSD1306, 128x64). I added th
 ```
 ### Data
 The display will show a general message describing what state/function the MMU is currently in, along with the most received serial command at the top. The center will show the current filament, or the current change in progress from a T* command. The bottom is just a quick status overview that keeps count of issues.
-
+<img src="./img/change.jpeg" width="480" />
 The data displayed includes:
 ```
   L:n/n  Priming failures / load failures
   U:n/n  Retract failures / unload failures
-  S:n    Total tool changes completed
+  T:n    Total tool changes completed
 ```
 
 ### Menu
@@ -41,6 +41,7 @@ When a load or unload failure is detected, or when the unit receives a wait (W0)
       > Move the idler forward 1°
 ```
 This is still a work in progress, and hope to get ideas for further improvements in the future.
+
 ## Building
 ### Arduino
 Recomended version is arduino 1.8.5.  
