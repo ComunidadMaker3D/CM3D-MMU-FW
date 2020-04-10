@@ -13,7 +13,7 @@
 
 //number of extruders
 #define EXTRUDERS               5
-#define ENABLE_CUTTER
+#undef  ENABLE_CUTTER
 
 //former stepper.cpp variables
 #define SELECTOR_STEPS                  697.5f   // 2790/4
@@ -50,7 +50,7 @@
 #define FILAMENT_EJECT_MM		120.0f
 
 //external display
-#define SSD_DISPLAY             // undefined for original PrusaMMU2
+#define SSD_DISPLAY
 
 //diagnostic functions
 #undef _DIAG

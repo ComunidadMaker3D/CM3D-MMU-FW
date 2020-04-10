@@ -204,7 +204,7 @@
   
   void display_status() {
     char text[22];
-    sprintf(text, "L:%d/%d U:%d/%d S:%d", current_display_counts[0], current_display_counts[1], current_display_counts[2], current_display_counts[3], current_display_counts[4]);
+    sprintf(text, "L:%d/%d U:%d/%d T:%d", current_display_counts[0], current_display_counts[1], current_display_counts[2], current_display_counts[3], current_display_counts[4]);
     
     oled.setFont(Adafruit5x7);
     oled.setCursor(0, 7);

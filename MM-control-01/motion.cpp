@@ -131,7 +131,7 @@ static void unload_to_finda()
     uint16_t steps = get_pulley_steps(FILAMENT_BOWDEN_MM);
     uint16_t steps_acc = get_pulley_acceleration_steps(PULLEY_DELAY_PRIME, PULLEY_DELAY_UNLOAD);
     uint16_t steps_dec = get_pulley_acceleration_steps(PULLEY_DELAY_UNLOAD, PULLEY_DELAY_PRIME);
-    uint16_t steps_extra = get_pulley_steps(10);
+    uint16_t steps_extra = get_pulley_steps(15);
     uint8_t _endstop_hit = 0;
     
     set_pulley_dir_pull();

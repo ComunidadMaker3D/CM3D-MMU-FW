@@ -50,7 +50,7 @@
 #define FILAMENT_EJECT_MM		120.0f
 
 //external display
-#undef SSD_DISPLAY             // undefined for original PrusaMMU2
+#undef SSD_DISPLAY
 
 //diagnostic functions
 #undef _DIAG
