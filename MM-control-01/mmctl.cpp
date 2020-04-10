@@ -444,6 +444,7 @@ int8_t modeIncr(int8_t mode, uint8_t count) {
   return (mode+1) % count;
 }
 
+#ifdef SSD_DISPLAY
 void enhanced_interactive_menu() {
   bool _continue = false;
   bool _isOk = false;
@@ -588,6 +589,7 @@ void enhanced_interactive_menu() {
   display_status();
   motion_engage_idler();
 }
+#endif
 
 
 void interactive_load_failure(boolean state) {
@@ -815,6 +817,7 @@ void load_filament_inPrinter()
             break;
         }
 
+#ifdef SSD_DISPLAY
         if (buttonPressed() == Btn::middle)
         {
           //allow manual intervention; exit to failure options
@@ -825,6 +828,7 @@ void load_filament_inPrinter()
             break;
           }
         }
+#endif
         
         do_pulley_step();
         _delay = fist_segment_delay - (micros() - now);
