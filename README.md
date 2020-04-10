@@ -26,7 +26,9 @@ The data displayed includes:
 
 ### Menu
 When a load or unload failure is detected, or when the unit receives a wait (W0) command from the printer, the unit will go into an "enhanced recovery menu." This is fairly basic, as it relies on the three available buttons, but it does provide the ability to tune the stepper motors if something got jammed and is not in the right place. It operates in four "modes." In each case, the center button will switch to the next mode.
+
 <img src="https://github.com/cjbaar/prusa-mmu-12x/blob/master/img/change.jpeg" width="480" />
+
 ```
   + Main
       < Rehome the idler and selector
