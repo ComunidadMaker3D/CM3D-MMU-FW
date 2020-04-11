@@ -6,6 +6,27 @@ This project was forked from the original Prusa source in order to make modifica
 
 I have only tested this using the Arduino IDE, so other sections below have been removed. Note that you need to copy one of the config variations in /MM-control-01/config-mmu-options to /MM-control-01/config-mmu.h. I have not tested this with the original Prusa 5-filament hardware, but it should theoretically work if you just want the display.
 
+## The Disclaimer
+These items and related code are provided as-is, with no warranty -- express or implied -- and I cannot personally guarantee that it will function and/or not break your printer. Nothing here, of course, is officially endorsed or supported by Prusa.
+
+That being said, I have had a great deal of luck using this model, or I wouldn't be sharing it.
+
+## Modifications
+Major code changes from the original source.
+* added handling for filament count greater than five
+* replaced hard-coded motor delay times with configurable feed rates (mm/s)
+* removed handling for cutter routines
+* attempt to use motor StallGuard feature to home idler, with less banging against the wall
+* added support for integrated OLED display
+* added enhanced failure recovery menu when using OLED display
+* moved all adjustable constants into config.h
+
+### Caveats
+Current issues which remain unresolved.
+* Attempts to limit the excessive banging when homing the idler are partially successful. In theory, we should be able to home this by reading the motor stall, like other axes on the printer and mmu, but I get mixed results. So always double-check the idler position after a homing attempt.
+* On several test prints, after 70-80 successful tool changes, the selector appears to be in the wrong position. Not yet sure if this is hardware- or software-related; it usually causes a jam on unload.
+
+
 ## Display
 This code has support for an optional OLED display (SSD1306, 128x64). I added this to help provide more information on what the MMU is actually thinking as it makes tool changes, and to improve the options for recovering from load/unload failures and jams. The display can be attached to the unused "SENSOR" port on the Prusa MMU2 control board, which is an exposed I2C interface. Connect jumper wires as below. Pin 1 of the SENSOR port is next to the power connector.
 ```
