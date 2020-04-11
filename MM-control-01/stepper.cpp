@@ -144,7 +144,7 @@ bool home_selector()
 
 	for (int c = 7; c > 0; c--)   // not really functional, let's do it rather more times to be sure
 	{
-		move(0, c * -18, 0);
+		if (c < 7) { move(0, c * -18, 0); }
 		delay(50);
 		for (int i = 0; i < 4000; i++)
 		{

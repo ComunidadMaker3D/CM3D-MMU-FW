@@ -106,7 +106,7 @@ bool feed_filament(bool timeout)
 
 	if (loaded)
 	{
-    retract_filament(finda_limit);
+    retract_filament(finda_limit*2);
 	}
 
 	tmc2130_disable_axis(AX_PUL, tmc2130_mode);
@@ -402,12 +402,12 @@ void retry_finda(boolean state) {
   
   for (int i = 6; i > 0; i--)
   {
-#ifdef SSD_DISPLAY
-    display_error((state)?MSG_UNLOADING:MSG_PRIMING, 7-i);
-#endif
     uint8_t _endstop_hit = 0;
     if (digitalRead(A1) == state)
     {
+#ifdef SSD_DISPLAY
+      display_error((state)?MSG_UNLOADING:MSG_PRIMING, 7-i);
+#endif
       // attempt to correct
       (state)?set_pulley_dir_push():set_pulley_dir_pull();
       for (int i = get_pulley_steps(10); i >= 0; i--)
@@ -434,6 +434,8 @@ void retry_finda(boolean state) {
           }
         }
       } while (_endstop_hit<finda_limit && _steps > 0);
+    } else {
+      return;
     }
     delay(100);
   }

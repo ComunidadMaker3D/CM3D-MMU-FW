@@ -131,7 +131,7 @@ static void unload_to_finda()
     uint16_t steps = get_pulley_steps(FILAMENT_BOWDEN_MM);
     uint16_t steps_acc = get_pulley_acceleration_steps(PULLEY_DELAY_PRIME, PULLEY_DELAY_UNLOAD);
     uint16_t steps_dec = get_pulley_acceleration_steps(PULLEY_DELAY_UNLOAD, PULLEY_DELAY_PRIME);
-    uint16_t steps_extra = get_pulley_steps(15);
+    uint16_t steps_extra = get_pulley_steps(FILAMENT_FINDA_EXIT_MM+12);
     uint8_t _endstop_hit = 0;
     
     set_pulley_dir_pull();
@@ -163,7 +163,7 @@ void motion_feed_to_bondtech()
     uint16_t steps = get_pulley_steps(FILAMENT_BOWDEN_MM);
     uint16_t steps_acc = get_pulley_acceleration_steps(PULLEY_DELAY_PRIME, PULLEY_DELAY_LOAD);
     uint16_t steps_dec = get_pulley_acceleration_steps(PULLEY_DELAY_LOAD, PULLEY_DELAY_EXTRUDER);
-    uint16_t steps_extra = get_pulley_steps(10);
+    uint16_t steps_extra = get_pulley_steps(5);
     uint16_t steps_exit = get_pulley_steps(FILAMENT_FINDA_EXIT_MM);
     
     const uint8_t tries = 2;
@@ -178,7 +178,6 @@ void motion_feed_to_bondtech()
         set_pulley_dir_push();
         uint16_t delay = PULLEY_DELAY_PRIME;
         uint16_t stepPeriod = PULLEY_DELAY_PRIME;
-
         for (uint16_t i = 0; i < steps_exit+steps+steps_extra; i++)
         {
             delayMicroseconds(delay);

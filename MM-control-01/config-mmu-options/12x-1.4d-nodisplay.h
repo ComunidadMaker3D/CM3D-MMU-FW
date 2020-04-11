@@ -17,7 +17,7 @@
 
 //former stepper.cpp variables
 #define SELECTOR_STEPS                  303     // 50 steps/mm
-#define SELECTOR_STEPS_AFTER_HOMING     -4250
+#define SELECTOR_STEPS_AFTER_HOMING     -4265
 #define SELECTOR_STEPS_LAST             450     // extra steps for close filaments
 
 #define IDLER_STEPS                     224     // 25.2° / .1125
@@ -45,9 +45,9 @@
 #define PULLEY_DELAY_UNLOAD     ceil(1000000 / (PULLEY_RATE_UNLOAD*PULLEY_STEPS_PER_MM))
 
 //filament lengths
-#define FILAMENT_FINDA_EXIT_MM  18.0f   // add ~10mm if using m6 selector instead of m10
+#define FILAMENT_FINDA_EXIT_MM  10.0f   // add ~16 if using m6 selector instead of m10
 #define FILAMENT_RETRACT_MM     8.0f
-#define FILAMENT_BOWDEN_MM      410.0f
+#define FILAMENT_BOWDEN_MM      427.0f
 #define FILAMENT_EJECT_MM		120.0f
 
 //external display
