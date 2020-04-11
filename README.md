@@ -4,7 +4,7 @@ MMU 3-axis stepper control
 ## Overview
 This project was forked from the original Prusa source in order to make modifications for increasing the number of filaments handled by the MMU. Related hardware for this project can be found at [https://github.com/cjbaar/prusa-mmu-12x](https://github.com/cjbaar/prusa-mmu-12x).
 
-I have only tested this using the Arduino IDE, so other sections below have been removed. Note that you need to copy one of the config variations in /MM-control-01/config-mmu-options to /MM-control-01/config-mmu.h. I have not tested this with the original Prusa 5-filament hardware, but it should theoretically work if you just want the display.
+I have only tested this using the Arduino IDE, so other sections below have been removed. Note that, in additional to the regular Arduino setup steps, you need to copy one of the config variations in /MM-control-01/config-mmu-options to /MM-control-01/config-mmu.h. I have not tested this with the original Prusa 5-filament hardware, but it should theoretically work if you just want the display.
 
 ## The Disclaimer
 These items and related code are provided as-is, with no warranty -- express or implied -- and I cannot personally guarantee that it will function and/or not break your printer. Nothing here, of course, is officially endorsed or supported by Prusa.
