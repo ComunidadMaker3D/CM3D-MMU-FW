@@ -25,7 +25,7 @@ Major code changes from the original source.
 Current issues which remain unresolved.
 * Attempts to limit the excessive banging when homing the idler are partially successful. In theory, we should be able to home this by reading the motor stall, like other axes on the printer and mmu, but I get mixed results. So always double-check the idler position after a homing attempt.
 * On several test prints, after 70-80 successful tool changes, the selector appears to be in the wrong position. Not yet sure if this is hardware- or software-related; it usually causes a jam on unload.
-
+* Bowden length calibration is currently disabled; the length of the tube is determined by the config value, in mm.
 
 ## Display
 This code has support for an optional OLED display (SSD1306, 128x64). I added this to help provide more information on what the MMU is actually thinking as it makes tool changes, and to improve the options for recovering from load/unload failures and jams. The display can be attached to the unused "SENSOR" port on the Prusa MMU2 control board, which is an exposed I2C interface. Connect jumper wires as below. Pin 1 of the SENSOR port is next to the power connector.
