@@ -100,9 +100,10 @@ bool home_idler()
 
 	for (int c = 3; c > 0; c--)  // not really functional, let's do it rather more times to be sure
 	{
+    int i;
     move(-10, 0, 0); // move a bit in opposite direction
-		delay(250);
-		for (int i = 0; i < 3000; i++)
+		delay(500);
+		for (i = 0; i < 3000; i++)
 		{
 			move(1, 0, 0);
 			uint16_t sg = tmc2130_read_sg(AX_IDL);
@@ -113,6 +114,10 @@ bool home_idler()
 			if (_c > 100) { shr16_set_led(1 << 2 * _l); };
 			if (_c > 200) { shr16_set_led(0x000); _c = 0; };
 		}
+    if (i >= 2900)
+    {
+      break;
+    }
 	}
 
 	move(IDLER_STEPS_AFTER_HOMING, 0, 0); // move to initial position
@@ -193,7 +198,7 @@ void move(int _idler, int _selector, int _pulley)
 	_idler = set_idler_direction(_idler); 
 	_selector = set_selector_direction(_selector);
 	_pulley = set_pulley_direction(_pulley);
-
+	
 	do
 	{
 		if (_idler > 0) { idler_step_pin_set(); }
