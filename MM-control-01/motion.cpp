@@ -60,17 +60,17 @@ void motion_set_idler_selector(uint8_t idler, uint8_t selector)
     int idler_steps = get_idler_steps(s_idler, idler);
     int selector_steps = get_selector_steps(s_selector, selector);
     
-    if (idler_steps == 0  &&  selector_steps == 0)
-    {
-      return;
-    }
-    
     if (!s_selector_homed)
     {
             home();
             s_selector = 0;
             s_idler = 0;
             s_selector_homed = true;
+    }
+    
+    if (idler_steps == 0  &&  selector_steps == 0)
+    {
+      return;
     }
     
 #ifdef SSD_DISPLAY
