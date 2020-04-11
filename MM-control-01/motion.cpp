@@ -164,6 +164,7 @@ void motion_feed_to_bondtech()
     uint16_t steps_acc = get_pulley_acceleration_steps(PULLEY_DELAY_PRIME, PULLEY_DELAY_LOAD);
     uint16_t steps_dec = get_pulley_acceleration_steps(PULLEY_DELAY_LOAD, PULLEY_DELAY_EXTRUDER);
     uint16_t steps_extra = get_pulley_steps(10);
+    uint16_t steps_exit = get_pulley_steps(FILAMENT_FINDA_EXIT_MM);
     
     const uint8_t tries = 2;
     for (uint8_t tr = 0; tr <= tries; ++tr)
@@ -178,12 +179,12 @@ void motion_feed_to_bondtech()
         uint16_t delay = PULLEY_DELAY_PRIME;
         uint16_t stepPeriod = PULLEY_DELAY_PRIME;
 
-        for (uint16_t i = 0; i < steps+steps_extra; i++)
+        for (uint16_t i = 0; i < steps_exit+steps+steps_extra; i++)
         {
             delayMicroseconds(delay);
             unsigned long now = micros();
 
-            if (i < steps_acc  &&  stepPeriod > PULLEY_DELAY_LOAD)  { stepPeriod = (float)stepPeriod * PULLEY_ACCELERATION_X; }
+            if (i >= steps_exit && i <= steps_exit+steps_acc  &&  stepPeriod > PULLEY_DELAY_LOAD)  { stepPeriod = (float)stepPeriod * PULLEY_ACCELERATION_X; }
             if (i > steps-steps_dec-steps_extra  &&  stepPeriod < PULLEY_DELAY_EXTRUDER)  { stepPeriod = (float)stepPeriod / PULLEY_ACCELERATION_X; }
 
            if ('A' == getc(uart_com))
