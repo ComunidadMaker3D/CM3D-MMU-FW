@@ -57,6 +57,14 @@ void motion_set_idler_selector(uint8_t idler_selector)
 //! @param selector selector
 void motion_set_idler_selector(uint8_t idler, uint8_t selector)
 {
+    int idler_steps = get_idler_steps(s_idler, idler);
+    int selector_steps = get_selector_steps(s_selector, selector);
+    
+    if (idler_steps == 0  &&  selector_steps == 0)
+    {
+      return;
+    }
+    
     if (!s_selector_homed)
     {
             home();
@@ -64,17 +72,14 @@ void motion_set_idler_selector(uint8_t idler, uint8_t selector)
             s_idler = 0;
             s_selector_homed = true;
     }
+    
 #ifdef SSD_DISPLAY
     display_message(MSG_SELECTING);
     display_extruder(-1);
 #endif
-    
     const uint8_t tries = 2;
     for (uint8_t i = 0; i <= tries; ++i)
     {
-        int idler_steps = get_idler_steps(s_idler, idler);
-        int selector_steps = get_selector_steps(s_selector, selector);
-
         move(idler_steps, selector_steps, 0);
         s_idler = idler;
         s_selector = selector;

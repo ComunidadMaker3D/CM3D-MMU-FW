@@ -106,7 +106,7 @@ bool home_idler()
 		{
 			move(1, 0, 0);
 			uint16_t sg = tmc2130_read_sg(AX_IDL);
-      if ((i > 16) && (sg < 16)) break;
+      if ((i > ((c==3)?IDLER_STEPS:16)) && (sg < 16)) break;
 
 			_c++;
 			if (i == 1000) { _l++; }
