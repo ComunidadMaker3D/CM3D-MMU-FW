@@ -24,7 +24,6 @@ Major code changes from the original source.
 ### Caveats
 Current issues which remain unresolved.
 * Attempts to limit the excessive banging when homing the idler are partially successful. In theory, we should be able to home this by reading the motor stall, like other axes on the printer and mmu, but I get mixed results. So always double-check the idler position after a homing attempt.
-* On several test prints, after 70-80 successful tool changes, the selector appears to be in the wrong position. Not yet sure if this is hardware- or software-related; it usually causes a jam on unload.
 * Bowden length calibration is currently disabled; the length of the tube is determined by the config value, in mm.
 
 ## Display
