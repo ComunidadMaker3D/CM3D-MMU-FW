@@ -19,7 +19,7 @@ Major code changes from the original source.
 * attempt to use motor StallGuard feature to home idler, with less banging against the wall
 * added support for integrated OLED display
 * added enhanced failure recovery menu when using OLED display
-* moved all adjustable constants into config.h
+* moved all adjustable constants into config-mmu.h
 
 ### Caveats
 Current issues which remain unresolved.
