@@ -52,16 +52,16 @@ enum class COUNTER : uint8_t {LOAD_RETRY, LOAD_FAIL, UNLOAD_RETRY, UNLOAD_FAIL, 
 extern void display_init();
 extern void display_test();
 extern void display_command();
-extern void display_command(char c, uint8_t v, boolean force=false);
+extern void display_command(char c, uint8_t v, boolean force);
 extern void display_extruder();
 extern void display_extruder(int8_t v);
 extern void display_extruder_change(int8_t new_extruder);
-extern void display_message(char *msg);
-extern void display_message(char *msg, int8_t v);
-extern void display_message(char *msg, int8_t v, boolean err);
-extern void display_error(char *msg);
-extern void display_error(char *msg, int8_t v);
-extern void display_menu_options(char *opta, char *optb, char *optc);
+extern void display_message(const char* msg);
+extern void display_message(const char* msg, int8_t v);
+extern void display_message(const char* msg, int8_t v, boolean err);
+extern void display_error(const char* msg);
+extern void display_error(const char* msg, int8_t v);
+extern void display_menu_options(const char* opta, const char* optb, const char* optc);
 extern void display_status();
 extern void display_count_incr(COUNTER i);
 

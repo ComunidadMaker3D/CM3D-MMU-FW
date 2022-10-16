@@ -235,7 +235,7 @@ void settings_bowden_length()
 
 		} while (buttonPressed() != Btn::middle);
 
-		unload_filament_withSensor();
+		unload_filament_withSensor(true);
 	}
 }
 

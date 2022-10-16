@@ -56,6 +56,8 @@
 static void tmc2130_tx(uint8_t axis, uint8_t addr, uint32_t wval);
 uint8_t tmc2130_rx(uint8_t axis, uint8_t addr, uint32_t* rval);
 uint8_t tmc2130_usteps2mres(uint16_t usteps);
+static void tmc2130_cs_low(uint8_t axis);
+static void tmc2130_cs_high(uint8_t axis);
 
 int8_t tmc2130_wr_CHOPCONF(uint8_t axis, uint8_t toff, uint8_t hstrt, uint8_t hend, uint8_t fd3, uint8_t disfdcc, uint8_t rndtf, uint8_t chm, uint8_t tbl, uint8_t vsense, uint8_t vhighfs, uint8_t vhighchm, uint8_t sync, uint8_t mres, uint8_t intpol, uint8_t dedge, uint8_t diss2g)
 {
@@ -147,7 +149,7 @@ inline int8_t __sg_thr(uint8_t axis)
 	return TMC2130_SG_THR;
 }
 
-inline int8_t __res(uint8_t axis)
+int8_t __res(uint8_t axis)
 {
 	switch (axis)
 	{
@@ -269,7 +271,7 @@ uint16_t tmc2130_read_sg(uint8_t axis)
 }
 
 
-inline void tmc2130_cs_low(uint8_t axis)
+static void tmc2130_cs_low(uint8_t axis)
 {
 	switch (axis)
 	{
@@ -279,7 +281,7 @@ inline void tmc2130_cs_low(uint8_t axis)
 	}
 }
 
-inline void tmc2130_cs_high(uint8_t axis)
+static void tmc2130_cs_high(uint8_t axis)
 {
 	switch (axis)
 	{

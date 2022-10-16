@@ -33,7 +33,6 @@ extern uint8_t tmc2130_check_axis(uint8_t axis);
 extern uint16_t tmc2130_read_sg(uint8_t axis);
 extern uint8_t tmc2130_read_gstat();
 
-
 #if defined(__cplusplus)
 }
 #endif //defined(__cplusplus)

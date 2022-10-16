@@ -156,7 +156,7 @@ void resolve_failed_loading(){
                 if(resolved){
                     signal_ok_after_load_failure();}
                 else{
-                    signal_load_failure();}
+                    signal_load_failure(800);}
                 
             break;
         }
@@ -191,7 +191,7 @@ void switch_extruder_withSensor(int new_extruder)
 
     if (!isFilamentLoaded)
     {
-            load_filament_withSensor();
+            load_filament_withSensor(true);
     }
 
 	shr16_set_led(0x000);
@@ -232,7 +232,7 @@ void mmctl_cut_filament(uint8_t filament)
 
     active_extruder = filament;
 
-    if (isFilamentLoaded)  unload_filament_withSensor();
+    if (isFilamentLoaded)  unload_filament_withSensor(true);
 
     motion_set_idler_selector(filament, filament);
 
@@ -279,7 +279,7 @@ void eject_filament(uint8_t filament)
     active_extruder = filament;
     uint8_t selector_position = min(filament + 3, EXTRUDERS);
 
-    if (isFilamentLoaded)  unload_filament_withSensor();
+    if (isFilamentLoaded)  unload_filament_withSensor(true);
 
     tmc2130_init_axis(AX_PUL, tmc2130_mode);
 
@@ -514,6 +514,9 @@ void enhanced_interactive_menu() {
             _isOk = checkOk();
             motion_disengage_idler();
             break;
+          default:
+            mode = modeIncr(mode, modeCount);
+            break;
         }
         break;
 
@@ -535,6 +538,9 @@ void enhanced_interactive_menu() {
             move(0, 0, get_pulley_steps(1));
             delayMicroseconds(500);
             break;
+          default:
+            mode = modeIncr(mode, modeCount);
+            break;
         }
         break;
       
@@ -553,6 +559,9 @@ void enhanced_interactive_menu() {
             break;
           case Btn::right:
             move(0, 25, 0);
+            break;
+          default:
+            mode = modeIncr(mode, modeCount);
             break;
         }
         break;
@@ -574,6 +583,9 @@ void enhanced_interactive_menu() {
           case Btn::right:
             move(-9, 0, 0);
             delayMicroseconds(500);
+            break;
+          default:
+            mode = modeIncr(mode, modeCount);
             break;
         }
         break;
@@ -720,7 +732,7 @@ void load_filament_withSensor(bool disengageIdler)
 #endif
 }
 
-void unload_filament_withSensor(bool disengageIdler=true)
+void unload_filament_withSensor(bool disengageIdler)
 {
     // unloads filament from extruder - filament is above Bondtech gears
     tmc2130_init_axis(AX_PUL, tmc2130_mode);

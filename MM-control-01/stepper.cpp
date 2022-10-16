@@ -21,7 +21,7 @@ static int set_selector_direction(int _steps);
 static int set_pulley_direction(int _steps);
 static void set_idler_dir_down();
 static void set_idler_dir_up();
-static void move(int _idler, int _selector, int _pulley);
+void move(int _idler, int _selector, int _pulley);
 
 
 //! @brief Compute pulley steps based on distance

@@ -109,7 +109,7 @@ static void signal_filament_present()
     delay(300);
 }
 
-void signal_load_failure(uint16_t rate = 800)
+void signal_load_failure(uint16_t rate)
 {
     shr16_set_led(0x000);
     delay(rate);
@@ -420,7 +420,7 @@ void loop()
         fprintf_P(uart_com, PSTR("ok\n"));
         display_message(MSG_IDLE);
 #else
-        signal_load_failure();
+        signal_load_failure(800);
         switch(buttonClicked())
         {
         case Btn::middle:
@@ -487,7 +487,7 @@ void process_commands(FILE* inout)
 		//printf_P(PSTR("line received: '%s' %d\n"), line, count);
 #ifdef SSD_DISPLAY
 		if (sscanf_P(line, PSTR("%c%d"), &cmd, &value) > 0) {
-			display_command(cmd, value);
+			display_command(cmd, value, false);
 		}
 #endif
 		
@@ -534,7 +534,7 @@ void process_commands(FILE* inout)
 		else if (sscanf_P(line, PSTR("U%d"), &value) > 0)
 		{
 
-			unload_filament_withSensor();
+			unload_filament_withSensor(true);
 			fprintf_P(inout, PSTR("ok\n"));
 
 			state = S::Idle;

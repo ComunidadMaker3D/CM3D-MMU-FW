@@ -60,29 +60,29 @@
     oled.clear();
   
     display_message(MSG_INITIALIZING);
-    display_command('X', 0);
+    display_command('X', 0, false);
     display_extruder(-1);
     display_status();
   }
 
   
-  void display_error(char *msg) {
+  void display_error(const char* msg) {
     display_message(msg, -1, true);
   }
   
-  void display_error(char *msg, int8_t v) {
+  void display_error(const char* msg, int8_t v) {
     display_message(msg, v, true);
   }
   
-  void display_message(char *msg) {
+  void display_message(const char* msg) {
     display_message(msg, -1, false);
   }
   
-  void display_message(char *msg, int8_t v) {
+  void display_message(const char* msg, int8_t v) {
     display_message(msg, v, false);
   }
   
-  void display_message(char *msg, int8_t v, boolean err) {
+  void display_message(const char* msg, int8_t v, boolean err) {
     char text[3];
     
     if (current_display_error != err) {
@@ -114,7 +114,7 @@
     display_command(current_display_cmd>>8, current_display_cmd&0xFF, true);
   }
   
-  void display_command(char c, uint8_t v, boolean force=false) {
+  void display_command(char c, uint8_t v, boolean force) {
     uint16_t command = (c<<8) | v;
     
     if (command != current_display_cmd  ||  force) {
@@ -216,7 +216,7 @@
   }
 
 
-  void display_menu_options(char *opta, char *optb, char *optc) {
+  void display_menu_options(const char* opta, const char* optb, const char* optc) {
     oled.setInvertMode(true);
     oled.setFont(Adafruit5x7);
     oled.setCursor(0, 7);
